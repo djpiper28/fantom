@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <cppunit/BriefTestProgressListener.h>
 #include <cppunit/CompilerOutputter.h>
 #include <cppunit/XmlOutputter.h>
@@ -12,7 +13,7 @@
 #define XMLOUT
 
 // register test suite
-CppUnit::Test *suite() {
+CppUnit::Test *suite () {
     CppUnit::TestFactoryRegistry &registry =
         CppUnit::TestFactoryRegistry::getRegistry();
     registry.registerFactory(
@@ -20,7 +21,8 @@ CppUnit::Test *suite() {
     return registry.makeTest();
 }
 
-int main(int argc, char* argv[]) {
+int main (int argc, char **argv)
+{
     std::string testPath = (argc > 1) ? std::string(argv[1]) : "";
     // Create the event manager and test controller
     CppUnit::TestResult controller;
@@ -43,7 +45,7 @@ int main(int argc, char* argv[]) {
     try {
         std::cout << std::endl;
         std::cout << "test fantom with cppunit" << std::endl;
-        std::cout << "========================="  << std::endl;
+        std::cout << "=========================" << std::endl;
         runner.run(controller, testPath);
         std::cout << "=========================" << std::endl;
         std::cout << std::endl;
@@ -58,8 +60,8 @@ int main(int argc, char* argv[]) {
     } catch ( std::invalid_argument& e ) { 
         // Test path not resolved
         std::cerr << std::endl << "ERROR: " << e.what() << std::endl;
-        return 0;
+        return 1;
     }
     
-    return result.wasSuccessful() ? 0 : 1;
+    return !result.wasSuccessful();
 }
