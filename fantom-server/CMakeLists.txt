@@ -70,6 +70,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "TEST")
     set (TEST_FILES
         ${SRC_FILES}
         tests/runner.cpp
+        tests/fantom_str_test.cpp
         )
     add_executable(fantom-tests ${TEST_FILES})
     target_link_libraries(fantom-tests

@@ -9,6 +9,9 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
+
+// Test files
+#include "fantom_str_test.h"
 #define XMLOUT
 
 // register test suite
