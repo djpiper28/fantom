@@ -17,7 +17,7 @@ fantom_status_t fantom_init_from_c_str(fantom_str_t *, const char *);
 // String.h wrappers
 fantom_status_t fantom_cpy_str(fantom_str_t *dest, fantom_str_t *src);
 fantom_status_t fantom_concat_str(fantom_str_t *dest, fantom_str_t *src);
-int fantom_cmp_str(fantom_str_t *a, fantom_str_t *b);
+int fantom_cmp_str(fantom_str_t *, fantom_str_t *);
 
 // Split and find
 size_t fantom_find_str(fantom_str_t *input, fantom_str_t *substr);
