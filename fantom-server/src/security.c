@@ -48,7 +48,6 @@ static int digest_message(const unsigned char *message,
 
 int hashPassword(char *password, char *salt, char **output, size_t *length)
 {
-    int status = 0;
     size_t pass_len = strlen(password);
     size_t buffer_length = SALT_LENGTH + pass_len;
     char *buffer = malloc(sizeof * buffer * buffer_length);
@@ -73,11 +72,11 @@ int hashPassword(char *password, char *salt, char **output, size_t *length)
 
     if (digest == NULL || s != 1) {
         lprintf(LOG_ERROR, "Failed to hash password\n");
-        return "";
+        return 0;
     }
 
 		*output = (char *) digest;
 		*length = (size_t) l;
-    return status;
+    return 1;
 }
 
