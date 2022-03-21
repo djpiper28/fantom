@@ -3,7 +3,7 @@
 #include "fantom_str.h"
 #include "fantom_utils.h"
 
-fantom_status fantom_valid_str(fantom_str *str)
+fantom_status_t fantom_valid_str(fantom_str_t *str)
 {
     if (str == NULL) {
         return FANTOM_FAIL;
@@ -16,8 +16,7 @@ fantom_status fantom_valid_str(fantom_str *str)
     return FANTOM_SUCCESS;
 }
 
-
-fantom_status fantom_free_str(fantom_str *str)
+fantom_status_t fantom_free_str(fantom_str_t *str)
 {
     if (str->ptr != NULL) {
         free(str->ptr);
@@ -31,7 +30,7 @@ fantom_status fantom_free_str(fantom_str *str)
     }
 }
 
-fantom_status fantom_init_str(fantom_str *str)
+fantom_status_t fantom_init_str(fantom_str_t *str)
 {
     char *ptr = malloc(sizeof * ptr);
     if (ptr == NULL) {
@@ -45,7 +44,7 @@ fantom_status fantom_init_str(fantom_str *str)
     }
 }
 
-fantom_status fantom_init_from_c_str(fantom_str *str, const char *c_str)
+fantom_status_t fantom_init_from_c_str(fantom_str_t *str, const char *c_str)
 {
     size_t length = strlen(c_str);
     char *ptr = malloc(sizeof * ptr * (length + 1));
@@ -62,7 +61,7 @@ fantom_status fantom_init_from_c_str(fantom_str *str, const char *c_str)
     }
 }
 
-fantom_status fantom_cpy_str(fantom_str *dest, fantom_str *src)
+fantom_status_t fantom_cpy_str(fantom_str_t *dest, fantom_str_t *src)
 {
     if (fantom_valid_str(dest) || fantom_valid_str(src)) {
         return FANTOM_FAIL;
@@ -85,7 +84,7 @@ fantom_status fantom_cpy_str(fantom_str *dest, fantom_str *src)
     }
 }
 
-fantom_status fantom_concat_str(fantom_str *dest, fantom_str *src)
+fantom_status_t fantom_concat_str(fantom_str_t *dest, fantom_str_t *src)
 {
     if (fantom_valid_str(dest) || fantom_valid_str(src)) {
         return FANTOM_FAIL;
@@ -107,7 +106,7 @@ fantom_status fantom_concat_str(fantom_str *dest, fantom_str *src)
     }
 }
 
-int fantom_cmp_str(fantom_str *a, fantom_str *b)
+int fantom_cmp_str(fantom_str_t *a, fantom_str_t *b)
 {
     if (fantom_valid_str(a) || fantom_valid_str(b)) {
         return FANTOM_FAIL;
@@ -115,3 +114,20 @@ int fantom_cmp_str(fantom_str *a, fantom_str *b)
 
     return strcmp(a->ptr, b->ptr);
 }
+
+size_t fantom_find_str(fantom_str_t *input, fantom_str_t *substr) {
+    return 0;
+}
+
+fantom_status_t fantom_split_str(fantom_str_t *dest, fantom_str_t *src, size_t pos) {
+    return FANTOM_FAIL;
+}
+
+size_t fantom_len_str(fantom_str_t *s) {
+    return s->buffer_len;
+}
+
+fantom_status_t fantom_is_good_str(fantom_str_t *s) {
+    return s->ptr != NULL ? FANTOM_SUCCESS : FANTOM_FAIL;
+}
+

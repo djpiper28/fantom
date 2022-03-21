@@ -3,4 +3,6 @@ build/
 
 *.kdev4
 *.kate-swp
+*.orig
+*.db
 *.conf
