@@ -58,9 +58,15 @@ set(MAIN
     )
 set(SRC_FILES
     src/config.c
+    src/fantom_str.c
+    src/security.c
+    src/logger.c
     )
 
-set(LIBS pthread)
+set(LIBS
+    pthread
+    crypto
+    )
 
 add_executable(fantom-server ${SRC_FILES} ${MAIN})
 set_target_properties(fantom-server PROPERTIES LINKER_LANGUAGE CXX)
