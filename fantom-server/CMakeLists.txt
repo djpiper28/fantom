@@ -6,7 +6,31 @@ set(REPO_URL "https://github.com/djpiper28/fantom")
 
 message(STATUS "Building ${CMAKE_PROJECT_NAME}")
 message(STATUS "Git repo: ${REPO_URL}")
-message(STATUS "Build type is ${CMAKE_BUILD_TYPE} for version ${CMAKE_PROJECT_VERSION} for ${CMAKE_SYSTEM_NAME}")
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "Version: ${CMAKE_PROJECT_VERSION}")
+message(STATUS "Build OS: ${CMAKE_SYSTEM_NAME}")
+
+# Get the branch name
+execute_process(
+COMMAND git rev-parse --abbrev-ref HEAD
+WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+OUTPUT_VARIABLE GIT_BRANCH
+OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Get the latest abbreviated commit hash of the working branch
+execute_process(
+COMMAND git log -1 --format=%h
+WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+OUTPUT_VARIABLE GIT_COMMIT_HASH
+OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+add_definitions(-DGIT_COMMIT_HASH="${GIT_COMMIT_HASH}")
+add_definitions(-DGIT_BRANCH="${GIT_BRANCH}")
+add_definitions("-DVERSION=\"${CMAKE_PROJECT_VERSION} (${GIT_COMMIT_HASH}@${GIT_BRANCH})\"")
+add_definitions("-DOS=\"${CMAKE_SYSTEM_NAME}\"")
+add_definitions("-DREPO_URL=\"${REPO_URL}\"")
 
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 11)

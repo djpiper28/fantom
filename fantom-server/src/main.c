@@ -2,6 +2,14 @@
 #include <stdio.h>
 #include "logger.h"
 #include "config.h"
+#include "banner.h"
+
+void print_intro()
+{
+	  lprintf(LOG_INFO, "Fantom %s for %s\n%s\n", VERSION, OS, BANNER);
+	  lprintf(LOG_INFO, "See ./readme.md for help.\n");
+	  lprintf(LOG_INFO, "More information at: %s\n", REPO_URL);
+}
 
 int load_config(fantom_config_t *config, char *filename)
 {
@@ -41,6 +49,7 @@ void start_fantom(int argc, char **argv) {
 
 int main (int argc, char **argv)
 {
+		print_intro();
     lprintf(LOG_INFO, "Starting fantom...\n");
     start_fantom(argc, argv);
     lprintf(LOG_ERROR, "Fantom has terminated.\n");
