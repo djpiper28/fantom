@@ -1,27 +1,18 @@
 #include <stdio.h>
-#include <iostream>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/time.h>
+#include <openssl/evp.h>
 #include <openssl/conf.h>
 #include <openssl/evp.h>
-#include <openssl/err.h>
 #include "security.h"
-#include "sys/time.h"
+#include "logger.h"
 
 void initSeed()
 {
     struct timeval seedTime;
     gettimeofday(&seedTime, NULL);
     srand(seedTime.tv_usec);
-}
-
-std::string getSalt()
-{
-    std::string ret = "";
-    for (int i = 0; i < SALT_LENGTH; i++) {
-        int random = abs(rand()) % (sizeof(SALT_CHARS) - 1);
-        ret += SALT_CHARS[random];
-    }
-
-    return ret;
 }
 
 static int digest_message(const unsigned char *message,
@@ -55,45 +46,38 @@ static int digest_message(const unsigned char *message,
     return 1;
 }
 
-// WARNING: The hex must be lower case because the java program creates lower case hashes.
-static char nibbleToHex(unsigned char nibble)
+int hashPassword(char *password, char *salt, char **output, size_t *length)
 {
-    if (nibble > 0x9) {
-        return 'a' + nibble - 0xa;
-    } else {
-        return '0' + nibble;
+    int status = 0;
+    size_t pass_len = strlen(password);
+    size_t buffer_length = SALT_LENGTH + pass_len;
+    char *buffer = malloc(sizeof * buffer * buffer_length);
+    if (buffer == NULL) {
+      	return 0;
     }
-}
-
-std::string hashPassword(std::string password, std::string salt, int *status)
-{
-    *status = 0;
-    std::string ret = "";
-    std::string toHash = password + salt;
+    
+    strcpy(buffer, password);
+    for (int i = 0; i < SALT_LENGTH; i++) {
+        int random = abs(rand()) % (sizeof(SALT_CHARS) - 1);
+        buffer[i + pass_len] = SALT_CHARS[random];
+    }
 
     // Ask openssl to nicely hash my salted password
-    unsigned int length;
+    unsigned int l;
     unsigned char *digest = NULL;
 
-    int s = digest_message((unsigned char*) toHash.c_str(),
-                           toHash.size(),
+    int s = digest_message((unsigned char*) buffer,
+                           buffer_length,
                            &digest,
-                           &length);
+                           &l);
 
     if (digest == NULL || s != 1) {
-        std::cerr << "Failed to hash password" << std::endl;
+        lprintf(LOG_ERROR, "Failed to hash password\n");
         return "";
     }
 
-    // Binary to hex
-    for (unsigned int i = 0; i < length; i ++) {
-        ret += nibbleToHex(digest[i] >> 4);
-        ret += nibbleToHex(digest[i] & 0xF);
-    }
-
-    free(digest);
-
-    *status = 1;
-    return ret;
+		*output = (char *) digest;
+		*length = (size_t) l;
+    return status;
 }
 

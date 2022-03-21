@@ -1,11 +1,11 @@
 #include "logger.h"
 #include <stdarg.h>
 #include <stdio.h>
-#include <sys/time.h>
+#include <time.h>
 
 #define TIME_BUFFER_LEN 100
 
-void logf(const char *tag, const char *fmt, ...)
+void lprintf(const char *tag, const char *fmt, ...)
 {
     // Get time
     time_t rawtime;
@@ -17,7 +17,7 @@ void logf(const char *tag, const char *fmt, ...)
     char time_buffer[TIME_BUFFER_LEN];
     strftime(time_buffer, sizeof(time_buffer), "%x - %H:%M:%S %Z", &info);
     
-    fprintf(LOG_STREAM, "[%s]@%s :\t", tag, time_buffer);
+    fprintf(LOG_STREAM, "[%s]\t@ %s: ", tag, time_buffer);
 
     va_list args;
     va_start(args, fmt);

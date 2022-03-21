@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 
 # set the project name
-project(fantom VERSION 1.0.0 LANGUAGES CXX)
+project(fantom VERSION 1.0.0)
 set(REPO_URL "https://github.com/djpiper28/fantom")
 
 message(STATUS "Building ${CMAKE_PROJECT_NAME}")
@@ -40,7 +40,7 @@ endif()
 
 # src
 set(MAIN
-    src/main.cpp
+    src/main.c
     )
 set(SRC_FILES
     src/config.c
@@ -49,7 +49,13 @@ set(SRC_FILES
     src/logger.c
     )
 
-set(LIBS ncurses pthread)
+find_package(json-c CONFIG)
+
+set(LIBS
+    pthread
+    crypto
+    json-c
+    )
 
 add_executable(fantom ${SRC_FILES} ${MAIN})
 target_link_libraries(fantom ${LIBS})
