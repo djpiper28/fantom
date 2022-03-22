@@ -33,13 +33,24 @@ jobs:
       with:
         languages: ${{ matrix.language }}
         
-    - name: Check libraries are up to date
+    - name: Install deps
       shell: bash
       run: |
         sudo apt-get update
         sudo apt-get install -y --no-install-recommends build-essential cmake libcppunit-dev gcovr libmbedtls-dev
+    - name: Update mongoose
+      run: |
         cd fantom-server
         bash update_mongoose.sh
+        
+    - name: Commit changes
+      if: steps.verify-changed-files.outputs.files_changed == 'true'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add README.md
+        git add **/mongoose\\.[c|h]
+        git commit -m "chore: Updated mongoose."
         
     - name: Make Release
       shell: bash
