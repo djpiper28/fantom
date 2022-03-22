@@ -6,10 +6,10 @@ browser or, from the pc application.
 time.**
 
 ## Project Structure
-| Folder | Content |
+| Folder | Build Status | Content |
 |---|---|
-| fantom-server | this is the fantom server source code. |
-| ... | ... |
+| fantom-server | [![Main](https://github.com/djpiper28/fantom/actions/workflows/main.yml/badge.svg)](https://github.com/djpiper28/fantom/actions/workflows/main.yml) | This is the fantom node/server source code. |
+| ... | ... | ... |
 
 This will be updated when development on the app, browser interface and, pc
 application starts.
