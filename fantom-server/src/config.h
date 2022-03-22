@@ -5,10 +5,7 @@
 #define CONFIG_FILE_NAME "fantom_config.json"
 
 typedef struct fantom_config_t {
-    char *db_name;
-    char *db_username;
-    char *db_password;
-    char *db_url; // includes the port.
+    char *db_file;
     char *bind_url; // where to bind the server to includes the port.
     int max_log_age_days; // in days
 } fantom_config_t;

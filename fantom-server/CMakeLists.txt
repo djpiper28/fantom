@@ -30,11 +30,17 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-add_definitions(-DGIT_COMMIT_HASH="${GIT_COMMIT_HASH}")
-add_definitions(-DGIT_BRANCH="${GIT_BRANCH}")
-add_definitions(-DVERSION=\"${CMAKE_PROJECT_VERSION} (${GIT_COMMIT_HASH}@${GIT_BRANCH})\"")
-add_definitions(-DOS="${CMAKE_SYSTEM_NAME}")
-add_definitions(-DREPO_URL="${REPO_URL}")
+# Version info
+add_definitions("-DGIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}\"")
+add_definitions("-DGIT_BRANCH=\"${GIT_BRANCH}\"")
+add_definitions("-DVERSION=\"${CMAKE_PROJECT_VERSION} (${GIT_COMMIT_HASH}@${GIT_BRANCH})\"")
+add_definitions("-DOS=\"${CMAKE_SYSTEM_NAME}\"")
+add_definitions("-DREPO_URL=\"${REPO_URL}\"")
+
+# __FILENAME__
+string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
+add_definitions("-DSOURCE_PATH_SIZE=${SOURCE_PATH_SIZE}")
+add_definitions("-D__FILENAME__=(__FILE__ + SOURCE_PATH_SIZE)")
 
 # Mongoose settings
 add_definitions(-DMG_ENABLE_IPV6=1)
