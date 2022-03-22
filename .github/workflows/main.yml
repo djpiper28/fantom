@@ -35,7 +35,11 @@ jobs:
         
     - name: Check libraries are up to date
       shell: bash
-      run: sudo apt-get update && sudo apt-get install -y --no-install-recommends build-essential cmake libcppunit-dev gcovr
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends build-essential cmake libcppunit-dev gcovr libmbedtls-dev
+        cd fantom-server
+        python3 update_mongoose.sh
         
     - name: Make Release
       shell: bash

@@ -22,6 +22,9 @@ mkdir -p build
 cmake .. && cmake --build . -j
 ```
 
+This contains a copy of [mongoose](https://github.com/cesanta/mongoose) just in-case
+it goes anywhere.
+
 ### Testing
 ```bash
 # cd fantom-server/

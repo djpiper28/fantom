@@ -50,7 +50,7 @@ void start_fantom(int argc, char **argv) {
 int main (int argc, char **argv)
 {
 		print_intro();
-    lprintf(LOG_INFO, "Starting fantom...\n");
+    lprintf(LOG_INFO, "Starting F@ntom...\n");
     start_fantom(argc, argv);
     lprintf(LOG_ERROR, "Fantom has terminated.\n");
 }

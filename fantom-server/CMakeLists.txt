@@ -4,6 +4,10 @@ cmake_minimum_required(VERSION 3.12)
 project(fantom VERSION 1.0.0)
 set(REPO_URL "https://github.com/djpiper28/fantom")
 
+# specify the C++ standard
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 message(STATUS "Building ${CMAKE_PROJECT_NAME}")
 message(STATUS "Git repo: ${REPO_URL}")
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
@@ -12,29 +16,31 @@ message(STATUS "Build OS: ${CMAKE_SYSTEM_NAME}")
 
 # Get the branch name
 execute_process(
-COMMAND git rev-parse --abbrev-ref HEAD
-WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-OUTPUT_VARIABLE GIT_BRANCH
-OUTPUT_STRIP_TRAILING_WHITESPACE
+  COMMAND git rev-parse --abbrev-ref HEAD
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_BRANCH
+  OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
 # Get the latest abbreviated commit hash of the working branch
 execute_process(
-COMMAND git log -1 --format=%h
-WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-OUTPUT_VARIABLE GIT_COMMIT_HASH
-OUTPUT_STRIP_TRAILING_WHITESPACE
+  COMMAND git log -1 --format=%h
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_COMMIT_HASH
+  OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
 add_definitions(-DGIT_COMMIT_HASH="${GIT_COMMIT_HASH}")
 add_definitions(-DGIT_BRANCH="${GIT_BRANCH}")
-add_definitions("-DVERSION=\"${CMAKE_PROJECT_VERSION} (${GIT_COMMIT_HASH}@${GIT_BRANCH})\"")
-add_definitions("-DOS=\"${CMAKE_SYSTEM_NAME}\"")
-add_definitions("-DREPO_URL=\"${REPO_URL}\"")
+add_definitions(-DVERSION=\"${CMAKE_PROJECT_VERSION} (${GIT_COMMIT_HASH}@${GIT_BRANCH})\"")
+add_definitions(-DOS="${CMAKE_SYSTEM_NAME}")
+add_definitions(-DREPO_URL="${REPO_URL}")
 
-# specify the C++ standard
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Mongoose settings
+add_definitions(-DMG_ENABLE_IPV6=1)
+add_definitions(-DMG_ENABLE_LINES=1)
+add_definitions(-DMG_ENABLE_DIRECTORY_LISTING=1)
+add_definitions(-DMG_ENABLE_FS=1)
 
 # compiler flags
 set(COMPILER_FLAGS "-Wall -Wextra -Wpedantic")
@@ -59,11 +65,10 @@ if (CMAKE_BUILD_TYPE STREQUAL "TEST")
     setup_target_for_coverage_gcovr_xml(NAME coverage
         EXECUTABLE fantom-tests
         EXCLUDE "build/*" "tests/*")
-
 endif()
 
 # src
-set(MAIN
+set(MAIN_FILE
     src/main.c
     )
 set(SRC_FILES
@@ -71,17 +76,18 @@ set(SRC_FILES
     src/fantom_str.c
     src/security.c
     src/logger.c
+    src/mongoose.c
     )
-
-find_package(json-c CONFIG)
 
 set(LIBS
     pthread
     crypto
-    json-c
+    mbedtls
+    mbedcrypto
+    mbedx509
     )
 
-add_executable(fantom ${SRC_FILES} ${MAIN})
+add_executable(fantom ${SRC_FILES} ${MAIN_FILE})
 target_link_libraries(fantom ${LIBS})
 target_include_directories(fantom PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR})
