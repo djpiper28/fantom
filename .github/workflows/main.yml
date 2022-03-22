@@ -47,9 +47,7 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add README.md
-        git add **/mongoose\\.[c|h]
-        git commit -m "chore: Updated mongoose."
+        git commit -a -m "chore: Updated mongoose."
         
     - name: Make Release
       shell: bash
