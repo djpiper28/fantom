@@ -36,6 +36,7 @@ add_definitions("-DGIT_BRANCH=\"${GIT_BRANCH}\"")
 add_definitions("-DVERSION=\"${CMAKE_PROJECT_VERSION} (${GIT_COMMIT_HASH}@${GIT_BRANCH})\"")
 add_definitions("-DOS=\"${CMAKE_SYSTEM_NAME}\"")
 add_definitions("-DREPO_URL=\"${REPO_URL}\"")
+add_definitions("-DBUFFER_LENGTH=4096")
 
 # __FILENAME__
 string(LENGTH "${CMAKE_SOURCE_DIR}/" SOURCE_PATH_SIZE)
@@ -82,6 +83,7 @@ set(SRC_FILES
     src/fantom_str.c
     src/security.c
     src/logger.c
+    src/server.c
     src/mongoose.c
     )
 

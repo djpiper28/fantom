@@ -3,6 +3,7 @@
 #include <string.h>
 #include "logger.h"
 #include "config.h"
+#include "server.h"
 #include "banner.h"
 #include "cli_help.h"
 
@@ -42,11 +43,6 @@ int load_config(fantom_config_t *config, char *filename)
 	  return 1;
 }
 
-void start_fantom_server(fantom_config_t config)
-{
-	  lprintf(LOG_INFO, "Starting server on %s with the database as %s.\n", config.bind_url, config.db_file);
-}
-
 // The bootstrapper - loads the config and, checks the db for validity
 void start_fantom(const char *config_file) {
     fantom_config_t config;
@@ -59,6 +55,7 @@ void start_fantom(const char *config_file) {
     // Call start server
     start_fantom_server(config);
     
+    // Free the server then exit, this should never happen though :)
     fantom_free_config(&config);
 
 		return;

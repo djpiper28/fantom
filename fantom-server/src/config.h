@@ -3,6 +3,11 @@
 #include <stdio.h>
 
 #define CONFIG_FILE_NAME "fantom_config.json"
+#define CONFIG_HELP "{\n" \
+				"  \"db_file\": \"fantom.db\",\n" \
+				"  \"bind_url\": \"http://127.0.0.1:8765\",\n" \
+				"  \"max_log_age_days\": 5\n" \
+				"}\n"
 
 typedef struct fantom_config_t {
     char *db_file;
