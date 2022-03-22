@@ -22,7 +22,7 @@ add_definitions("-D__FILENAME__=(__FILE__ + SOURCE_PATH_SIZE)")
 It removes the path to the files and gives you the src/ bit - very noice
 */
 #define lprintf fprintf(LOG_STREAM, "(" ANSI_YELLOW "%s" ANSI_RESET \
-				":" ANSI_YELLOW "%d" ANSI_RESET ") ", __FILENAME__, __LINE__ );\
+				":" ANSI_YELLOW "%d" ANSI_RESET ") ", __FILENAME__, __LINE__ ),\
 				__lprintf
 #else
 #define lprintf __lprintf
