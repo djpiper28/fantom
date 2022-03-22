@@ -1,6 +1,8 @@
 # F@ntom
-F@ntom is a FOSS service that let's you control your systemd from your phone, web
-browser or, from the pc application.
+F@ntom is a FOSS service that let's you control your system from your phone, web
+browser or, from the pc application. It is a lightweight tool for linux machines
+that have systemd and, is perfect for things such as home servers or raspberry
+pis.
 
 **F@ntom is currently under development and is expected to be finished in a long
 time.**

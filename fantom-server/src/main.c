@@ -6,10 +6,11 @@
 #include "server.h"
 #include "banner.h"
 #include "cli_help.h"
+#include "mongoose.h"
 
 void print_intro()
 {
-	  lprintf(LOG_INFO, "F@ntom Version: %s. For: %s\n%s\n", VERSION, OS, BANNER);
+	  lprintf(LOG_INFO, "F@ntom Version: %s. For: %s - Mongoose v%s\n%s\n", VERSION, OS, MG_VERSION, BANNER);
 	  lprintf(LOG_INFO, "A light-weight remote monitoring system for your machines.\n");
 	  lprintf(LOG_INFO, "See ./README.md for help or, view the wiki.\n");
 	  lprintf(LOG_INFO, "More information at: %s\n", REPO_URL);
@@ -53,7 +54,7 @@ void start_fantom(const char *config_file) {
     lprintf(LOG_INFO, "Read configuration file successfully\n");
 
     // Call start server
-    start_fantom_server(config);
+    start_fantom_server(&config);
     
     // Free the server then exit, this should never happen though :)
     fantom_free_config(&config);
