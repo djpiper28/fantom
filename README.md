@@ -17,6 +17,16 @@ This will be updated when development on the app, browser interface and, pc
 application starts.
 
 ## fantom-server/
+### Requirements
+
+| Requirement | Usage |
+|---|---|
+| `jansson` | json |
+| `mbedtls` | tls for mongoose (can be swapped to openssl) |
+| `openssl` | crypto |
+| `pthread` | threading |
+| `sqlite3` | database |
+
 ### Building
 ```bash
 # cd fantom-server/

@@ -1,24 +1,18 @@
 #include <stdlib.h>
+#include <jansson.h>
 #include <string.h>
 #include "config.h"
 #include "logger.h"
 
 void fantom_config_help()
 {
-    lprintf(LOG_INFO, "Your configuration file i.e: %s must be in the following format:\n", CONFIG_FILE_NAME);
-    lprintf(LOG_INFO, "%s\n", CONFIG_HELP);
+    lprintf(LOG_INFO, "Your configuration file i.e: %s must be in the following format:\n%s\n", CONFIG_FILE_NAME, CONFIG_HELP);
 
-    FILE *f = fopen(CONFIG_FILE_NAME, "wx");
+    FILE *f = fopen(CONFIG_FILE_NAME, "w");
     if (f == NULL) {
-        f = fopen(CONFIG_FILE_NAME, "w");
-    		if (f == NULL) {
-    	      lprintf(LOG_ERROR, "Cannot create example config %s\n", CONFIG_FILE_NAME);
-				} else {
-					  fclose(f);
-    	      lprintf(LOG_ERROR, "Config file %s already exists, this was not overwritten\n", CONFIG_FILE_NAME);
-				}
+    	  lprintf(LOG_ERROR, "Cannot write to config file %s\n", CONFIG_FILE_NAME);
     } else {
-        fprintf(f, CONFIG_HELP);
+        fprintf(f, "%s", CONFIG_HELP);
         fclose(f);
         lprintf(LOG_INFO, "An example configuration file was made called %s\n", CONFIG_FILE_NAME);
     }
@@ -61,18 +55,68 @@ fantom_status_t fantom_init_config(FILE *input, fantom_config_t *output)
 
 				// Check for errors in buffer growth
 				if (ptr != NULL) {
-    	      ptr[++buffer_pointer] = (char) c;
+    	      ptr[buffer_pointer++] = (char) c;
 				}
     }
-
-    // Parse the json
 		
-		fantom_status_t status = db_file != NULL && bind_url != NULL && max_log_age_days > 0;
+		fantom_status_t status = FANTOM_SUCCESS;
 
 		// Finalise read and, cleanup tmp
 		if (ptr != NULL) {
+				// Parse the json
+        json_t *root;
+        json_error_t error;
+				root = json_loads(ptr, 0, &error);
+				
 			  free(ptr);
+
+			  // Json to internal structs
+			  if (!root) {
+			  	  status = FANTOM_FAIL;
+			  	  lprintf(LOG_ERROR, "Cannot parse config file as json\n");
+			  } else if (!json_is_object(root)) {
+			  	  status = FANTOM_FAIL;
+			  	  lprintf(LOG_ERROR, "Config file config file is not in expected form\n");
+            json_decref(root);
+			  } else {
+			  	  json_t *jtmp;
+			  	  
+            jtmp = json_object_get(root, "db_file");
+            if (json_is_string(jtmp)) {
+               	const char * t = json_string_value(jtmp);
+               	size_t len = strlen(t);
+               	
+               	db_file = malloc(sizeof * db_file * (len + 1));
+               	strcpy(db_file, t);
+            } else {
+            	  lprintf(LOG_ERROR, "db_file is not a number in the config file\n");
+            }
+            
+            jtmp = json_object_get(root, "bind_url");
+            if (json_is_string(jtmp)) {
+               	const char * t = json_string_value(jtmp);
+               	size_t len = strlen(t);
+               	
+               	bind_url = malloc(sizeof * db_file * (len + 1));
+               	strcpy(bind_url, t);
+            } else {
+            	  lprintf(LOG_ERROR, "bind_url is not a number in the config file\n");
+						}
+            
+            jtmp = json_object_get(root, "max_log_age_days");
+            if (json_is_number(jtmp)) {
+         				max_log_age_days = json_number_value(jtmp);
+            } else {
+            	  lprintf(LOG_ERROR, "max_log_age_days is not an integer in the config file\n");
+            }
+
+            json_decref(root);
+			  }
 		}		
+
+		if (status) {
+		    status = db_file != NULL && bind_url != NULL && max_log_age_days > 0;
+		}
 		
     if (db_file != NULL) {
         if (status) {
@@ -80,7 +124,9 @@ fantom_status_t fantom_init_config(FILE *input, fantom_config_t *output)
         } else {
         	  free(db_file);
         }
-    }
+    } else {
+    		lprintf(LOG_ERROR, "db_file is not defined\n");
+		}
 
     if (bind_url != NULL) {
     		if (status) {
@@ -88,7 +134,13 @@ fantom_status_t fantom_init_config(FILE *input, fantom_config_t *output)
     		}	else {
     			  free(bind_url);
     		}
-    }
+    } else {
+    		lprintf(LOG_ERROR, "bind_url is not defined\n");
+		}
+
+		if (max_log_age_days <= 0 ) {
+    		lprintf(LOG_ERROR, "max_log_age_days is not defined or below or equal to zero\n");
+		}
     
 		// Check for errors
 		if (!status) {

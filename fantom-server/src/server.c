@@ -21,14 +21,14 @@ static void cb(struct mg_connection *c, int ev, void *ev_data, void *fn_data) {
 
 void start_fantom_server(fantom_config_t *config)
 {
-	  lprintf(LOG_INFO, "Starting server on %s with the database as %s.\n", config->bind_url, config->db_file);
+	  lprintf(LOG_INFO, "Starting server on %s with the database file %s and, max log age of %d\n", config->bind_url, config->db_file, config->max_log_age_days);
 
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
  
     struct mg_mgr mgr;
   
-    mg_log_set(MG_DEBUG);
+    mg_log_set(MG_DEBUG_LVL);
     mg_mgr_init(&mgr);
 
     struct mg_connection *c = mg_http_listen(&mgr, config->bind_url, cb, &mgr);

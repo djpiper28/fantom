@@ -88,11 +88,12 @@ set(SRC_FILES
     )
 
 set(LIBS
-    pthread
-    crypto
-    mbedtls
-    mbedcrypto
-    mbedx509
+    pthread    # threads
+    crypto     # password hashing
+    mbedtls    # v
+    mbedcrypto # mongoose crypto
+    mbedx509   # ^
+    jansson    # json
     )
 
 add_executable(fantom ${SRC_FILES} ${MAIN_FILE})
