@@ -44,7 +44,6 @@ jobs:
         bash update_mongoose.sh
         
     - name: Commit changes
-      if: steps.verify-changed-files.outputs.files_changed == 'true'
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
