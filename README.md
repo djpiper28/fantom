@@ -7,7 +7,7 @@ time.**
 
 ## Project Structure
 | Folder | Build Status | Content |
-|---|---|
+|---|---|---|
 | fantom-server | [![Main](https://github.com/djpiper28/fantom/actions/workflows/main.yml/badge.svg)](https://github.com/djpiper28/fantom/actions/workflows/main.yml) | This is the fantom node/server source code. |
 | ... | ... | ... |
 
