@@ -48,7 +48,7 @@ jobs:
         cd fantom-server
         mkdir -p build
         cd build
-        cmake ..
+        cmake .. -DCMAKE_BUILD_TYPE=RELEASE
         cmake --build . -j
         
     - name: Run Tests and Coverage
