@@ -2,13 +2,13 @@
 
 int test_func(int (*test_method)(), const char *test_name)
 {
-    lprintf(TEST_INFO, "Info: Testing %s: \n", test_name);
+    lprintf(TEST_INFO, "Running unit test %s: \n", test_name);
 
     int status = test_method();
     if (status) {
-        lprintf(TEST_PASS, "Test %s passed\n", test_name);
+        lprintf(TEST_PASS, "Unit test %s passed\n", test_name);
     } else {
-        lprintf(TEST_FAIL, "Test %s failed\n", test_name);
+        lprintf(TEST_FAIL, "Unit test %s failed\n", test_name);
     }
 
     return status;
