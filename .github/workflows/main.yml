@@ -48,6 +48,7 @@ jobs:
         cd fantom-server
         mkdir -p build
         cd build
+        rm -rf *
         cmake .. -DCMAKE_BUILD_TYPE=RELEASE
         cmake --build . -j
         
@@ -57,6 +58,7 @@ jobs:
         cd fantom-server
         mkdir -p build
         cd build
+        rm -rf *
         cmake .. -DCMAKE_BUILD_TYPE=TEST
         cmake --build . -j
         make coverage
