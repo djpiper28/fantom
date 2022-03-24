@@ -44,6 +44,7 @@ jobs:
         
     - name: Make Release
       shell: bash
+      env: CMAKE_C_COMPILER=/bin/gcc
       run : |
         cd fantom-server
         mkdir -p build
@@ -54,6 +55,7 @@ jobs:
         
     - name: Run Tests and Coverage
       shell: bash
+      env: CMAKE_C_COMPILER=/bin/gcc
       run: |
         cd fantom-server
         mkdir -p build
