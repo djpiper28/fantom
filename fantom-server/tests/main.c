@@ -4,6 +4,7 @@
 #include "test_db.h"
 #include "test_config.h"
 #include "test_utils.h"
+#include "test_security.h"
 
 int main()
 {
@@ -15,6 +16,7 @@ int main()
     failed += test_db();
     failed += test_config();
     failed += test_utils();
+    failed += test_security();
 
     if (failed == 0) {
         lprintf(LOG_INFO, "All unit tests passed\n");

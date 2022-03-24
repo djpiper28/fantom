@@ -126,6 +126,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "TEST")
         tests/test_db.c
         tests/test_config.c
         tests/test_utils.c
+        tests/test_security.c
         )
     add_executable(fantom-tests ${TEST_FILES})
     target_link_libraries(fantom-tests
