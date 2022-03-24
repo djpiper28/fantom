@@ -41,6 +41,6 @@ fantom_status_t init_db(fantom_db_t *fdb, char *db_file)
 
 void free_db(fantom_db_t *db)
 {
-    sqlite3_close(db);
+    sqlite3_close(db->db);
 }
 

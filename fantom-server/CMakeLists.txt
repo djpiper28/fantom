@@ -46,6 +46,7 @@ add_definitions("-D__FILENAME__=(__FILE__ + SOURCE_PATH_SIZE)")
 # Mongoose settings
 add_definitions(-DMG_ENABLE_IPV6=1)
 add_definitions(-DMG_ENABLE_LINES=1)
+# Enable file serving for the static build of the web app
 add_definitions(-DMG_ENABLE_DIRECTORY_LISTING=1)
 add_definitions(-DMG_ENABLE_FS=1)
 
@@ -79,6 +80,7 @@ set(MAIN_FILE
     src/main.c
     )
 set(SRC_FILES
+		src/banner.c
     src/config.c
     src/fantom_str.c
     src/security.c
@@ -118,12 +120,12 @@ if (CMAKE_BUILD_TYPE STREQUAL "TEST")
 
     set (TEST_FILES
         ${SRC_FILES}
-        tests/runner.cpp
-        tests/fantom_str_test.cpp
+        tests/main.c
+        tests/testing.c
         )
     add_executable(fantom-tests ${TEST_FILES})
     target_link_libraries(fantom-tests
-        cppunit ${LIBS})
+        ${LIBS})
     target_include_directories(fantom-tests PUBLIC
         ${CMAKE_CURRENT_BINARY_DIR})
 

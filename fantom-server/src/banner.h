@@ -9,4 +9,5 @@ ANSI_CYAN " /_____/ /_____/ " ANSI_RESET " |     \\    " ANSI_CYAN " /_____/ /__
 "                  \\___  /                     \n"\
 "                      \\/                      "
 
+void print_intro();
 
