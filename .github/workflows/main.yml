@@ -58,14 +58,10 @@ jobs:
         cmake --build . -j
         make coverage
     
-    - uses: codecov/codecov-action@v1
+    - uses: codecov/codecov-action@v2.1.0
       with:
-        token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
-        files: build/coverage.xml # optional
-        flags: unittests # optional
+        directory: build/
         name: codecov-umbrella # optional
-        fail_ci_if_error: false # optional (default = false)
-        verbose: true # optional (default = false)
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
