@@ -95,6 +95,7 @@ char *hash_password(char *password, char *salt)
                            buffer_length,
                            &digest,
                            &l);
+    free(buffer);
 
     if (digest == NULL || s != 1) {
         lprintf(LOG_ERROR, "Failed to hash password\n");

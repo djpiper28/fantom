@@ -37,7 +37,7 @@ jobs:
       shell: bash
       run: |
         sudo apt-get update
-        sudo apt-get install -y --no-install-recommends build-essential cmake gcovr libmbedtls-dev libjansson-dev
+        sudo apt-get install -y --no-install-recommends build-essential cmake gcovr libmbedtls-dev libjansson-dev valgrind python3
         
     - name: Make Release
       shell: bash

@@ -29,6 +29,7 @@ static int test_hash_password()
 	  ASSERT(strcmp(hash, hash2) == 0);
 	  ASSERT(strlen(hash2) == SHA512_DIGEST_STRING_LENGTH);
 	  
+	  free(salt);
 	  free(hash);
 	  free(hash2);
 	  return 1;

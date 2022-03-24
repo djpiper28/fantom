@@ -47,6 +47,7 @@ static int test_invalid_json()
 
     fantom_config_t config;
     ASSERT(fantom_init_config(r, &config) == FANTOM_FAIL);
+    fclose(r);
 }
 
 int test_config()

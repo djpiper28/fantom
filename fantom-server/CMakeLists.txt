@@ -112,7 +112,7 @@ file(GLOB STATIC_IMG
   "assets/**"
 )
 file(COPY ${STATIC_IMG} DESTINATION "${CMAKE_BINARY_DIR}/assets/")
-file(COPY mem_tets.sh DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY mem_tests.sh DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY mem_tests.py DESTINATION ${CMAKE_BINARY_DIR})
 
 # Make tests when needed
