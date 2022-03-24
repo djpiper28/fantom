@@ -58,7 +58,7 @@ static char nibble_to_hex(unsigned char nibble)
 
 char *get_salt()
 {
-    char *buffer = malloc(sizeof * buffer * SALT_LENGTH);
+    char *buffer = malloc(sizeof * buffer * (SALT_LENGTH + 1));
     if (buffer == NULL) {
         lprintf(LOG_ERROR, "Could not assign memory\n");
         return NULL;
@@ -68,6 +68,7 @@ char *get_salt()
         int random = abs(rand()) % (sizeof(SALT_CHARS) - 1);
         buffer[i] = SALT_CHARS[random];
     }
+    buffer[SALT_LENGTH] = 0;
 
     return buffer;
 }
