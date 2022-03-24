@@ -38,6 +38,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y --no-install-recommends build-essential cmake libcppunit-dev gcovr libmbedtls-dev jansson-dev
+
     - name: Update mongoose
       run: |
         cd fantom-server

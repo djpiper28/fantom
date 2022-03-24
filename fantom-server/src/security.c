@@ -52,9 +52,9 @@ int hashPassword(char *password, char *salt, char **output, size_t *length)
     size_t buffer_length = SALT_LENGTH + pass_len;
     char *buffer = malloc(sizeof * buffer * buffer_length);
     if (buffer == NULL) {
-      	return 0;
+        return 0;
     }
-    
+
     strcpy(buffer, password);
     for (int i = 0; i < SALT_LENGTH; i++) {
         int random = abs(rand()) % (sizeof(SALT_CHARS) - 1);
@@ -75,8 +75,8 @@ int hashPassword(char *password, char *salt, char **output, size_t *length)
         return 0;
     }
 
-		*output = (char *) digest;
-		*length = (size_t) l;
+    *output = (char *) digest;
+    *length = (size_t) l;
     return 1;
 }
 
