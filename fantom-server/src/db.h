@@ -2,10 +2,8 @@
 #include <sqlite3.h>
 #include "fantom_utils.h"
 
-#define DB_CREATE_TABLES ""
-
 typedef struct fantom_db_t {
-    sqlite3 *db
+    sqlite3 *db;
 } fantom_db_t;
 
 // Opens the db, if it is not present then it will make one and, create the tables.

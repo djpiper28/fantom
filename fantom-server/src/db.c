@@ -2,6 +2,39 @@
 #include "db.h"
 #include "logger.h"
 
+char *DB_CREATE_TABLES =
+    "create table users ("
+    "  uid int primary key,"
+    "  name varchar(64) not null,"
+    "  salt varchar(256) not null,"
+    "  password varchar(128) not null"
+    ");"
+    "create table admins ("
+    "  uid int REFERENCES users(uid) not NULL"
+    ");"
+    "create table programs ("
+    "  pid int primary key,"
+    "  name varchar(256),"
+    "  created_time int"
+    ");"
+    "create table log_entry ("
+    "  pid int REFERENCES programs(pid) not null,"
+    "  start_time int not null,"
+    "  end_time int not null,"
+    "  memory_usage int not null,"
+    "  cpu_time int not null,"
+    "  max_threads int not NULL"
+    ");"
+    "create table user_prog_prefs ("
+    "  uid int REFERENCES users(uid) not null,"
+    "  pid int REFERENCES programs(pid) not null,"
+    "  colour int,"
+    "  favourite bool not null DEFAULT false,"
+    "  hidden bool not null DEFAULT false,"
+    "  name varchar(256),"
+    "  check ((favourite or hidden) and not (favourite and hidden))"
+    ");";
+
 fantom_status_t init_db(fantom_db_t *fdb, char *db_file)
 {
     int make_tables = 0;
