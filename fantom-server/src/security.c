@@ -8,7 +8,7 @@
 #include "security.h"
 #include "logger.h"
 
-void initSeed()
+void init_seed()
 {
     struct timeval seedTime;
     gettimeofday(&seedTime, NULL);
@@ -46,20 +46,46 @@ static int digest_message(const unsigned char *message,
     return 1;
 }
 
-int hashPassword(char *password, char *salt, char **output, size_t *length)
+// WARNING: The hex must be lower case
+static char nibble_to_hex(unsigned char nibble)
+{
+    if (nibble > 0x9) {
+    				return 'a' + nibble - 0xa;
+    } else {
+    				return '0' + nibble;
+    }
+}
+
+char *get_salt()
+{
+    char *buffer = malloc(sizeof * buffer * SALT_LENGTH);
+    if (buffer == NULL) {
+        lprintf(LOG_ERROR, "Could not assign memory\n");
+        return NULL;
+		}
+ 
+    for (int i = 0; i < SALT_LENGTH; i++) {
+        int random = abs(rand()) % (sizeof(SALT_CHARS) - 1);
+        buffer[i] = SALT_CHARS[random];
+    }
+
+    return buffer;
+}
+
+char *hash_password(char *password, char *salt)
 {
     size_t pass_len = strlen(password);
-    size_t buffer_length = SALT_LENGTH + pass_len;
-    char *buffer = malloc(sizeof * buffer * buffer_length);
+    size_t salt_len = strlen(salt);
+    size_t buffer_length = salt_len + pass_len;
+    char *buffer = malloc(sizeof * buffer * (buffer_length + 1));
     if (buffer == NULL) {
-        return 0;
+        lprintf(LOG_ERROR, "Could not assign memory\n");
+        return NULL;
     }
 
     strcpy(buffer, password);
-    for (int i = 0; i < SALT_LENGTH; i++) {
-        int random = abs(rand()) % (sizeof(SALT_CHARS) - 1);
-        buffer[i + pass_len] = SALT_CHARS[random];
-    }
+    strcpy(buffer + pass_len, salt);
+    buffer[buffer_length] = 0;
 
     // Ask openssl to nicely hash my salted password
     unsigned int l;
@@ -72,11 +98,28 @@ int hashPassword(char *password, char *salt, char **output, size_t *length)
 
     if (digest == NULL || s != 1) {
         lprintf(LOG_ERROR, "Failed to hash password\n");
-        return 0;
+        return NULL;
     }
 
-    *output = (char *) digest;
-    *length = (size_t) l;
-    return 1;
+    if (l * 2 != SHA512_DIGEST_STRING_LENGTH) {
+    	  lprintf(LOG_ERROR, "Hash length is wrong\n");
+    	  return NULL;
+    }
+
+    char *hex_hash = malloc(sizeof * hex_hash * (SHA512_DIGEST_STRING_LENGTH + 1));
+    if (hex_hash == NULL) {
+        lprintf(LOG_ERROR, "Could not assign memory\n");
+    	  free(digest);
+    	  return NULL;
+    }
+    
+    for (size_t i = 0; i < l && i < SHA512_DIGEST_STRING_LENGTH / 2; i++) {
+    	  hex_hash[2 * i] = nibble_to_hex((digest[i] >> 4) & 0xF);
+    	  hex_hash[2 * i + 1] = nibble_to_hex(digest[i] & 0xF);
+    }
+    hex_hash[SHA512_DIGEST_STRING_LENGTH] = 0;
+    free(digest);
+
+		return hex_hash;
 }
 

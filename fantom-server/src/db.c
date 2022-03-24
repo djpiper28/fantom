@@ -33,7 +33,12 @@ char *DB_CREATE_TABLES =
     "  hidden bool not null DEFAULT false,"
     "  name varchar(256),"
     "  check ((favourite or hidden) and not (favourite and hidden))"
-    ");";
+    ");"
+    "insert into users (uid, name, salt, password) "
+    "values (1, 'admin', "
+    "'" DEFAULT_PASSWORD_SALT "', "
+    "'" DEFAULT_PASSWORD_HASH "');"
+    "insert into admins (uid) values (1);";
 
 fantom_status_t init_db(fantom_db_t *fdb, char *db_file)
 {
@@ -64,6 +69,11 @@ fantom_status_t init_db(fantom_db_t *fdb, char *db_file)
         }
 
         lprintf(LOG_INFO, "A new database %s was made successfully\n", db_file);
+        lprintf(LOG_WARNING, "A default user called '"
+        								     ANSI_YELLOW "admin" ANSI_RESET "' with password '" 
+        								     ANSI_YELLOW DEFAULT_PASSWORD ANSI_RESET 
+        								     "' was made, please login and "
+        								     ANSI_RED "change the password" ANSI_RESET "\n");
     }
 
     // Copy to struct

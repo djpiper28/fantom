@@ -4,6 +4,7 @@
 #define SALT_LENGTH 256
 #define SHA512_DIGEST_STRING_LENGTH 128
 
-void initSeed();
-int hashPassword(char *password, char *salt, char **output, size_t *length);
+void init_seed();
+char *get_salt();
+char *hash_password(char *password, char *salt);
 

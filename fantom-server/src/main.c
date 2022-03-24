@@ -8,6 +8,7 @@
 #include "banner.h"
 #include "cli_help.h"
 #include "mongoose.h"
+#include "security.h"
 
 void print_cli_help()
 {
@@ -60,6 +61,8 @@ void start_fantom(const char *config_file)
 
     lprintf(LOG_INFO, "Opened the database file successfully\n");
 
+    init_seed();
+    
     // Call start server
     start_fantom_server(&config, &db);
 
