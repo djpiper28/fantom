@@ -52,7 +52,7 @@ jobs:
         cmake .. -DCMAKE_BUILD_TYPE=RELEASE
         cmake --build . -j
       env:
-        CMAKE_C_COMPILER=/bin/gcc
+        CMAKE_C_COMPILER: /bin/gcc
         
     - name: Run Tests and Coverage
       shell: bash
@@ -65,7 +65,7 @@ jobs:
         cmake --build . -j
         make coverage
       env:
-        CMAKE_C_COMPILER=/bin/gcc
+        CMAKE_C_COMPILER: /bin/gcc
     
     - uses: codecov/codecov-action@v2.1.0
       with:
