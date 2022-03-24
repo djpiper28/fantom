@@ -8,6 +8,17 @@ set(REPO_URL "https://github.com/djpiper28/fantom")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Setup coverage (using gcovr so needs gcc/g++)
+set(CMAKE_C_COMPILER /usr/bin/gcc)
+set(CMAKE_CXX_COMPILER /usr/bin/g++)
+
+# compiler flags
+set(COMPILER_FLAGS "-Wall -Wextra -Wpedantic")
+set(CMAKE_C_FLAGS_DEBUG "-g -O0 ${COMPILER_FLAGS} -DDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG})
+set(CMAKE_C_FLAGS_RELEASE "-O2 ${COMPILER_FLAGS}")
+set(CMAKE_CXX_FLAGS_RELEASE ${CMAKE_C_FLAGS_RELEASE})
+
 message(STATUS "Building ${CMAKE_PROJECT_NAME}")
 message(STATUS "Git repo: ${REPO_URL}")
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
@@ -50,22 +61,10 @@ add_definitions(-DMG_ENABLE_LINES=1)
 add_definitions(-DMG_ENABLE_DIRECTORY_LISTING=1)
 add_definitions(-DMG_ENABLE_FS=1)
 
-# compiler flags
-set(COMPILER_FLAGS "-Wall -Wextra -Wpedantic")
-set(CMAKE_C_FLAGS_DEBUG "-g -O0 ${COMPILER_FLAGS} -DDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG})
-set(CMAKE_C_FLAGS_RELEASE "-O2 ${COMPILER_FLAGS}")
-set(CMAKE_CXX_FLAGS_RELEASE ${CMAKE_C_FLAGS_RELEASE})
-
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake)
 
 if (CMAKE_BUILD_TYPE STREQUAL "TEST")
     include(CodeCoverage)
-
-    # Setup coverage (using gcovr so needs gcc/g++)
-    set(CMAKE_C_COMPILER gcc)
-    set(CMAKE_CXX_COMPILER g++)
-
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_DEBUG} -DTEST")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG} -DTEST")
 
@@ -101,17 +100,16 @@ set(LIBS
     sqlite3    # database
     )
 
+# Build JWT library
+add_subdirectory(lib/l8w8jwt/)
+
+# Build fantom
 add_executable(fantom ${SRC_FILES} ${MAIN_FILE})
-target_link_libraries(fantom ${LIBS})
+target_link_libraries(fantom PUBLIC ${LIBS} PRIVATE l8w8jwt)
 target_include_directories(fantom PUBLIC
     ${CMAKE_CURRENT_BINARY_DIR})
 
-
-# Copy static content (images, favicon, etc.)
-file(GLOB STATIC_IMG
-  "assets/**"
-)
-file(COPY ${STATIC_IMG} DESTINATION "${CMAKE_BINARY_DIR}/assets/")
+# Copy test scripts
 file(COPY mem_tests.sh DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY mem_tests.py DESTINATION ${CMAKE_BINARY_DIR})
 
@@ -131,8 +129,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "TEST")
         tests/test_security.c
         )
     add_executable(fantom-tests ${TEST_FILES})
-    target_link_libraries(fantom-tests
-        ${LIBS})
+		target_link_libraries(fantom-tests PUBLIC ${LIBS} PRIVATE l8w8jwt)
     target_include_directories(fantom-tests PUBLIC
         ${CMAKE_CURRENT_BINARY_DIR})
 
