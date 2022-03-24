@@ -115,16 +115,6 @@ int fantom_cmp_str(fantom_str_t *a, fantom_str_t *b)
     return strcmp(a->ptr, b->ptr);
 }
 
-size_t fantom_find_str(fantom_str_t *input, fantom_str_t *substr)
-{
-    return 0;
-}
-
-fantom_status_t fantom_split_str(fantom_str_t *dest, fantom_str_t *src, size_t pos)
-{
-    return FANTOM_FAIL;
-}
-
 size_t fantom_len_str(fantom_str_t *s)
 {
     return s->buffer_len;

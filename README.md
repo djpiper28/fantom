@@ -10,7 +10,7 @@ time.**
 ## Project Structure
 | Folder | Build Status | Content |
 |---|---|---|
-| fantom-server | [![Main](https://github.com/djpiper28/fantom/actions/workflows/main.yml/badge.svg)](https://github.com/djpiper28/fantom/actions/workflows/main.yml) | This is the fantom node/server source code. |
+| fantom-server | [![Main](https://github.com/djpiper28/fantom/actions/workflows/main.yml/badge.svg)](https://github.com/djpiper28/fantom/actions/workflows/main.yml) [![codecov](https://codecov.io/gh/djpiper28/fantom/branch/main/graph/badge.svg?token=FKLI93HBRN)](https://codecov.io/gh/djpiper28/fantom) | This is the fantom node/server source code. |
 | ... | ... | ... |
 
 This will be updated when development on the app, browser interface and, pc

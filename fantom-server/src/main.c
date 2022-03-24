@@ -45,7 +45,7 @@ int load_config(fantom_config_t *config, char *filename)
 }
 
 // The bootstrapper - loads the config and, checks the db for validity
-void start_fantom(const char *config_file)
+void start_fantom(char *config_file)
 {
     fantom_config_t config;
     if (!load_config(&config, config_file)) {
@@ -79,11 +79,19 @@ int main (int argc, char **argv)
 {
     // Parse CLI args
     int err = 0;
+    char *config_file = CONFIG_FILE_NAME;
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
             print_cli_help();
             return 1;
-        } else {
+        } else if (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--config") == 0) {
+            if (i + 1 < argc) {
+            	  config_file = argv[i++];
+            } else {
+            		err = 1;
+            		lprintf(LOG_ERROR, "CLI argument -c (--config) has no config file specified\n");
+						}
+				} else {
             err = 1;
         }
     }
@@ -96,7 +104,7 @@ int main (int argc, char **argv)
 
     print_intro();
     lprintf(LOG_INFO, "Starting F@ntom...\n");
-    start_fantom(CONFIG_FILE_NAME);
+    start_fantom(config_file);
     lprintf(LOG_ERROR, "Fantom has terminated\n");
 
     return 2;

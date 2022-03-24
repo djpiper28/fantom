@@ -3,7 +3,7 @@
 #include "../src/banner.h"
 #include "test_db.h"
 
-int main(int argc, char **argv)
+int main()
 {
     print_intro();
     lprintf(LOG_INFO, "Running unit tests\n");
