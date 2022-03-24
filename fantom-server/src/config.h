@@ -17,5 +17,5 @@ typedef struct fantom_config_t {
 
 void fantom_config_help();
 fantom_status_t fantom_init_config(FILE *input, fantom_config_t *output);
-fantom_status_t fantom_free_config(fantom_config_t *config);
+void fantom_free_config(fantom_config_t *config);
 

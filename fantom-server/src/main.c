@@ -62,7 +62,7 @@ void start_fantom(char *config_file)
     lprintf(LOG_INFO, "Opened the database file successfully\n");
 
     init_seed();
-    
+
     // Call start server
     start_fantom_server(&config, &db);
 
@@ -86,12 +86,12 @@ int main (int argc, char **argv)
             return 1;
         } else if (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--config") == 0) {
             if (i + 1 < argc) {
-            	  config_file = argv[i++];
+                config_file = argv[i++];
             } else {
-            		err = 1;
-            		lprintf(LOG_ERROR, "CLI argument -c (--config) has no config file specified\n");
-						}
-				} else {
+                err = 1;
+                lprintf(LOG_ERROR, "CLI argument -c (--config) has no config file specified\n");
+            }
+        } else {
             err = 1;
         }
     }

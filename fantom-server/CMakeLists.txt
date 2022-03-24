@@ -88,6 +88,7 @@ set(SRC_FILES
     src/server.c
     src/db.c
     src/mongoose.c
+    src/utils.c
     )
 
 set(LIBS
@@ -123,6 +124,8 @@ if (CMAKE_BUILD_TYPE STREQUAL "TEST")
         tests/main.c
         tests/testing.c
         tests/test_db.c
+        tests/test_config.c
+        tests/test_utils.c
         )
     add_executable(fantom-tests ${TEST_FILES})
     target_link_libraries(fantom-tests

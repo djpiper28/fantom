@@ -3,6 +3,7 @@
 #include <string.h>
 #include "config.h"
 #include "logger.h"
+#include "utils.h"
 
 void fantom_config_help()
 {
@@ -20,44 +21,17 @@ void fantom_config_help()
 
 fantom_status_t fantom_init_config(FILE *input, fantom_config_t *output)
 {
+    // Zero the config and, init the state
+    memset(output, 0, sizeof(*output));
     if (input == NULL) {
         lprintf(LOG_ERROR, "Config file is unreadable\n");
         return FANTOM_FAIL;
     }
 
-    // Zero the config and, init the state
-    memset(output, 0, sizeof(*output));
-
     char *db_file = NULL;
     char *bind_url = NULL;
     int max_log_age_days = -1;
-
-    // Read form file
-    size_t buffer_length = BUFFER_LENGTH;
-    size_t buffer_pointer = 0;
-    char *ptr = malloc(sizeof * ptr * buffer_length);
-
-    // Read to buffer
-    for (int c = EOF; (c = fgetc(input)) != EOF && ptr != NULL;) {
-        // Grow buffer if needed
-        if (buffer_pointer + 1 >= buffer_length) {
-            buffer_length += BUFFER_LENGTH;
-            char *next_ptr = realloc(ptr, buffer_length);
-
-            if (next_ptr == NULL) {
-                free(ptr);
-                ptr = NULL;
-            } else if (next_ptr != ptr) {
-                ptr = next_ptr;
-            }
-
-        }
-
-        // Check for errors in buffer growth
-        if (ptr != NULL) {
-            ptr[buffer_pointer++] = (char) c;
-        }
-    }
+    char *ptr = read_file(input);
 
     fantom_status_t status = FANTOM_SUCCESS;
 
@@ -154,7 +128,7 @@ fantom_status_t fantom_init_config(FILE *input, fantom_config_t *output)
     return status;
 }
 
-fantom_status_t fantom_free_config(fantom_config_t *config)
+void fantom_free_config(fantom_config_t *config)
 {
     if (config->db_file != NULL) {
         free(config->db_file);
@@ -165,7 +139,5 @@ fantom_status_t fantom_free_config(fantom_config_t *config)
         free(config->bind_url);
         config->bind_url = NULL;
     }
-
-    return FANTOM_SUCCESS;
 }
 

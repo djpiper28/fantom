@@ -70,10 +70,10 @@ fantom_status_t init_db(fantom_db_t *fdb, char *db_file)
 
         lprintf(LOG_INFO, "A new database %s was made successfully\n", db_file);
         lprintf(LOG_WARNING, "A default user called '"
-        								     ANSI_YELLOW "admin" ANSI_RESET "' with password '" 
-        								     ANSI_YELLOW DEFAULT_PASSWORD ANSI_RESET 
-        								     "' was made, please login and "
-        								     ANSI_RED "change the password" ANSI_RESET "\n");
+                ANSI_YELLOW "admin" ANSI_RESET "' with password '"
+                ANSI_YELLOW DEFAULT_PASSWORD ANSI_RESET
+                "' was made, please login and "
+                ANSI_RED "change the password" ANSI_RESET "\n");
     }
 
     // Copy to struct
