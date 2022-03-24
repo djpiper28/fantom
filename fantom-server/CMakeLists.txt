@@ -112,6 +112,8 @@ file(GLOB STATIC_IMG
   "assets/**"
 )
 file(COPY ${STATIC_IMG} DESTINATION "${CMAKE_BINARY_DIR}/assets/")
+file(COPY mem_tets.sh DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY mem_tests.py DESTINATION ${CMAKE_BINARY_DIR})
 
 # Make tests when needed
 if (CMAKE_BUILD_TYPE STREQUAL "TEST")
@@ -136,5 +138,6 @@ if (CMAKE_BUILD_TYPE STREQUAL "TEST")
 
     enable_testing ()
     add_test(NAME fantom-tests COMMAND fantom-tests)
+		add_test(NAME memory-tests COMMAND bash mem_tests.sh)
 endif()
 
