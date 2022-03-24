@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <unistd.h>
 #include "test_config.h"
 #include "testing.h"
 #include "../src/logger.h"
@@ -30,11 +31,30 @@ static int test_make_default_config()
     return 1;
 }
 
+static int test_invalid_json()
+{
+    int fid[2];
+    pipe(fid);
+
+    FILE *r = fdopen(fid[0], "r");
+    FILE *w = fdopen(fid[1], "w");
+
+    ASSERT(r != NULL);
+    ASSERT(w != NULL);
+
+    fprintf(w, "bad json");
+    fclose(w);
+
+    fantom_config_t config;
+    ASSERT(fantom_init_config(r, &config) == FANTOM_FAIL);
+}
+
 int test_config()
 {
     unit_test tests[] = {
         {&test_init_free, "test_init_free"},
-        {&test_make_default_config, "test_make_default_config"}
+        {&test_make_default_config, "test_make_default_config"},
+        {&test_invalid_json, "test_invalid_json"}
     };
 
     return run_tests(tests, TESTS_SIZE(tests), "config.c");
