@@ -8,10 +8,6 @@ set(REPO_URL "https://github.com/djpiper28/fantom")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Setup coverage (using gcovr so needs gcc/g++)
-set(CMAKE_C_COMPILER /usr/bin/gcc)
-set(CMAKE_CXX_COMPILER /usr/bin/g++)
-
 # compiler flags
 set(COMPILER_FLAGS "-Wall -Wextra -Wpedantic")
 set(CMAKE_C_FLAGS_DEBUG "-g -O0 ${COMPILER_FLAGS} -DDEBUG")
@@ -67,6 +63,10 @@ if (CMAKE_BUILD_TYPE STREQUAL "TEST")
     include(CodeCoverage)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_DEBUG} -DTEST")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG} -DTEST")
+
+    # Setup coverage (using gcovr so needs gcc/g++)
+    set(CMAKE_C_COMPILER /usr/bin/gcc)
+    set(CMAKE_CXX_COMPILER /usr/bin/g++)
 
     append_coverage_compiler_flags()
     setup_target_for_coverage_gcovr_xml(NAME coverage
