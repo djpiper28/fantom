@@ -48,7 +48,8 @@ jobs:
         cd fantom-server
         mkdir -p build
         cd build
-        cmake ..
+        rm -rf *
+        cmake .. -DCMAKE_BUILD_TYPE=RELEASE "-DCMAKE_C_COMPILER=/bin/gcc"
         cmake --build . -j
         
     - name: Run Tests and Coverage
@@ -57,7 +58,8 @@ jobs:
         cd fantom-server
         mkdir -p build
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=TEST
+        rm -rf *
+        cmake .. -DCMAKE_BUILD_TYPE=TEST "-DCMAKE_C_COMPILER=/bin/gcc"
         cmake --build . -j
         make coverage
     
