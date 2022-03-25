@@ -4,7 +4,7 @@ import sys
 
 NO_LEAKS = "All heap blocks were freed -- no leaks are possible"
 TEST_EXEC_NAME = "fantom-tests"
-VALGRIND_OPTS = "--leak-check=full --show-leak-kinds=all --track-fds=all"
+VALGRIND_OPTS = "--leak-check=full --show-leak-kinds=all --track-fds=yes" #all" silly ubuntu has no all
 
 
 def tests():
