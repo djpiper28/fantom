@@ -62,7 +62,7 @@ jobs:
         cmake .. -DCMAKE_BUILD_TYPE=TEST "-DCMAKE_C_COMPILER=/bin/gcc"
         cmake --build . -j
         make coverage
-        bash mem_tests.py
+        bash mem_tests.sh
     
     - uses: codecov/codecov-action@v2.1.0
       with:
