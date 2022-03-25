@@ -61,17 +61,17 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake)
 
 if (CMAKE_BUILD_TYPE STREQUAL "TEST")
     include(CodeCoverage)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_DEBUG} -DTEST")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG} -DTEST")
 
     # Setup coverage (using gcovr so needs gcc/g++)
-    set(CMAKE_C_COMPILER /usr/bin/gcc)
-    set(CMAKE_CXX_COMPILER /usr/bin/g++)
+		#set(CMAKE_C_COMPILER /usr/bin/gcc)
+		#set(CMAKE_CXX_COMPILER /usr/bin/g++)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_DEBUG} -DTEST")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG} -DTEST")
 
     append_coverage_compiler_flags()
     setup_target_for_coverage_gcovr_xml(NAME coverage
         EXECUTABLE fantom-tests
-        EXCLUDE "build/*" "tests/*")
+        EXCLUDE "build/*" "tests/*" "src/mongoose.c" "src/mongoose.h")
 endif()
 
 # src
@@ -136,5 +136,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "TEST")
     enable_testing ()
     add_test(NAME fantom-tests COMMAND fantom-tests)
 		add_test(NAME memory-tests COMMAND bash mem_tests.sh)
+
+		message(STATUS "TEST build setup")
 endif()
 
