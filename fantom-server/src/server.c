@@ -3,6 +3,7 @@
 #include "mongoose.h"
 #include "logger.h"
 #include "server.h"
+#include "security.h"
 
 static int running = 1;
 static void signal_handler(int signo)
@@ -29,8 +30,10 @@ void start_fantom_server(fantom_config_t *config, fantom_db_t *db)
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
 
-    struct mg_mgr mgr;
+    fantom_nonce_manager_t nonce_mgr;
+    init_nonce_manager(&nonce_mgr);
 
+    struct mg_mgr mgr;
     mg_log_set(MG_DEBUG_LVL);
     mg_mgr_init(&mgr);
 
@@ -45,6 +48,7 @@ void start_fantom_server(fantom_config_t *config, fantom_db_t *db)
     }
 
     lprintf(LOG_INFO, "Stopping server...\n");
+    free_nonce_manager(&nonce_mgr);
     mg_mgr_free(&mgr);
 }
 

@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "testing.h"
 #include "test_security.h"
 #include "../src/logger.h"
@@ -41,12 +42,26 @@ static int test_init_seed()
     return 1;
 }
 
+static int test_nonce_manager_deadlocks()
+{
+    fantom_nonce_manager_t mgr;
+    init_nonce_manager(&mgr);
+
+    sleep(5);
+    pthread_mutex_lock(&mgr.lock_var);
+    pthread_mutex_unlock(&mgr.lock_var);
+
+    free_nonce_manager(&mgr);
+    return 1;
+}
+
 int test_security()
 {
     unit_test tests[] = {
         {&test_init_seed, "test_init_seed"},
         {&test_get_salt, "test_get_salt"},
-        {&test_hash_password, "test_hash_password"}
+        {&test_hash_password, "test_hash_password"},
+        {&test_nonce_manager_deadlocks, "test_nonce_manager_deadlocks"}
     };
 
     return run_tests(tests, TESTS_SIZE(tests), "security.c");

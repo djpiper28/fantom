@@ -38,15 +38,15 @@ static int test_good_read()
 
 static int test_big_read()
 {
-	  FILE *f = fopen("fantom-tests", "rb");
-	  ASSERT(f != NULL);
+    FILE *f = fopen("fantom-tests", "rb");
+    ASSERT(f != NULL);
 
-	  char *ret = read_file(f);
-	  ASSERT(ret != NULL);
+    char *ret = read_file(f);
+    ASSERT(ret != NULL);
 
-	  free(ret);
-	  fclose(f);
-	  return 1;
+    free(ret);
+    fclose(f);
+    return 1;
 }
 
 int test_utils()
@@ -54,7 +54,7 @@ int test_utils()
     unit_test tests[] = {
         {&test_bad_read, "test_bad_read"},
         {&test_good_read, "test_good_read"},
-				{&test_big_read, "test_big_read"}
+        {&test_big_read, "test_big_read"}
     };
 
     return run_tests(tests, TESTS_SIZE(tests), "utils.c");
