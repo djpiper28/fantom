@@ -122,6 +122,28 @@ static int test_nonce_reserved()
 
 	  ASSERT(get_new_nonce_map_index(&m, 0) == -1);
 	  ASSERT(get_new_nonce_map_index(&m, NONCE_MAP_GRAVE_MARKER) == -1);
+	  return 1;
+}
+
+static int test_nonce_duplication()
+{
+    fantom_nonce_manager_t mgr;
+    init_nonce_manager(&mgr);
+
+    pthread_mutex_lock(&mgr.lock_var);
+    ASSERT(mgr.nonces == 0);
+    mgr.poll_thread_running = 0;
+    pthread_mutex_unlock(&mgr.lock_var);
+
+    void *ret;
+    pthread_join(mgr.poll_thread, &ret);
+
+    // Test adding duplicates fails
+    mgr.nonce_map[1] = 1;
+    ASSERT(get_new_nonce_map_index(&mgr, 1) == -1);
+	  
+	  free_nonce_manager(&mgr);
+	  return 1;
 }
 
 int test_security()
@@ -132,7 +154,8 @@ int test_security()
         {&test_hash_password, "test_hash_password"},
         {&test_nonce_manager_deadlocks, "test_nonce_manager_deadlocks"},
 				{&test_max_nonces, "test_max_nonces"},
-				{&test_nonce_reserved, "test_nonce_reserved"}
+				{&test_nonce_reserved, "test_nonce_reserved"},
+				{&test_nonce_duplication, "test_nonce_duplication"}
     };
 
     return run_tests(tests, TESTS_SIZE(tests), "security.c");
