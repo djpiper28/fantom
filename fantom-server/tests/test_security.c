@@ -47,9 +47,27 @@ static int test_nonce_manager_deadlocks()
     fantom_nonce_manager_t mgr;
     init_nonce_manager(&mgr);
 
-    sleep(5);
+		// Test for deadlocks in get nonce
+    unsigned int r;
+    for (int i = 0; i < 1000; i++) {
+        get_nonce(&mgr, &r);
+    }
+
+		// Wait for a few rounds of polling
+    for (int i = NONCE_TIMEOUT_S + 2; i > 0; i--) {
+        lprintf(TEST_INFO, "Waiting for nonce manager %d...\n", i);
+        sleep(1);
+    }
+
+		// Test for deadlocks after polling
+    for (int i = 0; i < 1000; i++) {
+        get_nonce(&mgr, &r);
+    }
+
+    lprintf(TEST_INFO, "Locking...\n");
     pthread_mutex_lock(&mgr.lock_var);
     pthread_mutex_unlock(&mgr.lock_var);
+    lprintf(TEST_INFO, "Unlocked\n");
 
     free_nonce_manager(&mgr);
     return 1;

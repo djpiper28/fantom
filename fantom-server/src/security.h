@@ -7,11 +7,12 @@
 #define SHA512_DIGEST_STRING_LENGTH 128
 
 #define NONCE_MULT 30
-#define NONCE_MAP_SIZE (4096 * NONCE_MULT)
-#define NONCE_MAX_COUNT (NONCE_MAP_SIZE / NONCE_MULT)
+#define NONCE_BASE 4096
+#define NONCE_MAP_SIZE (NONCE_BASE * NONCE_MULT)
+#define NONCE_MAX_COUNT NONCE_BASE
 #define NONCE_TIMEOUT_S 10
 #define NONCE_POLL_TIME_MS 10
-#define NONCE_MAP_GRAVE_MARKER 0
+#define NONCE_MAP_GRAVE_MARKER 1
 
 typedef struct fantom_claims_t {
     int uid;
@@ -27,22 +28,23 @@ typedef struct fantom_nonce_t {
 typedef struct fantom_nonce_manager_t {
     // Internal State
     pthread_t poll_thread;
-    int poll_thread_running;
+    volatile int poll_thread_running;
     pthread_mutex_t lock_var;
 
     // Logical State
-    size_t front_ptr, back_ptr, nonces;
+    int front_ptr, back_ptr, nonces;
     fantom_nonce_t *nonce_queue;
     unsigned int *nonce_map;
 } fantom_nonce_manager_t;
 
 fantom_status_t init_nonce_manager(fantom_nonce_manager_t *nonce_mgr);
 void free_nonce_manager(fantom_nonce_manager_t *nonce_mgr);
-unsigned int get_nonce(fantom_nonce_manager_t *nonce_mgr);
+fantom_status_t get_nonce(fantom_nonce_manager_t *nonce_mgr, unsigned int *ret);
 fantom_status_t use_nonce(fantom_nonce_manager_t *mgr, unsigned int nonce);
 
-int get_new_nonce_map_index(fantom_nonce_manager_t *mgr, unsigned int nonce);
-int get_nonce_map_index(fantom_nonce_manager_t *mgr, unsigned int nonce);
+// Internal logical functions exposed for testing.
+int get_new_nonce_map_index(fantom_nonce_manager_t *mgr, unsigned int nonce); // not thread safe
+int get_nonce_map_index(fantom_nonce_manager_t *mgr, unsigned int nonce);     // not thread safe
 
 void init_seed();
 char *get_salt();
