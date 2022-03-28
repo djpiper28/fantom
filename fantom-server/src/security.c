@@ -32,7 +32,7 @@ int get_nonce_map_index(fantom_nonce_manager_t *mgr, unsigned int nonce)
             return i;
         }
 
-        if (mgr->nonce_map[i] != 0) {
+        if (mgr->nonce_map[i] == 0) {
         	return -1;
         }
     }
