@@ -12,7 +12,6 @@ static void signal_handler(int signo)
     lprintf(LOG_WARNING, "SIG %d received, terminating...\n", signo);
 }
 
-
 static void cb(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
 {
     if (ev == MG_EV_HTTP_MSG) {
@@ -21,7 +20,6 @@ static void cb(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
         c->is_closing = 1;
     }
 }
-
 
 void start_fantom_server(fantom_config_t *config, fantom_db_t *db)
 {
