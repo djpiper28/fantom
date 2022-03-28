@@ -183,7 +183,7 @@ static int test_use_nonce()
         ASSERT(mgr.nonce_map[get_nonce_map_index(&mgr, r)] == r);
         
         ASSERT(use_nonce(&mgr, r) == FANTOM_SUCCESS);
-        ASSERT(mgr.nonce_map[get_nonce_map_index(&mgr, r)] == NONCE_MAP_GRAVE_MARKER);
+        ASSERT(get_nonce_map_index(&mgr, r) == -1);
 
         // Using this again is illegal
         ASSERT(use_nonce(&mgr, r) == FANTOM_FAIL);
