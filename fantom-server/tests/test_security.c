@@ -190,7 +190,7 @@ static int test_use_nonce()
         ASSERT(use_nonce(&mgr, r) == FANTOM_FAIL);
         ASSERT(use_nonce(&mgr, r) == FANTOM_FAIL);
 
-        ASSERT(mgr.nonces == i + 1);
+        ASSERT(mgr.nonces == 0);
     }
 
     lprintf(TEST_INFO, "Locking...\n");
