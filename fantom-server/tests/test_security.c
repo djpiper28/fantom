@@ -58,6 +58,10 @@ static int test_nonce_manager_deadlocks()
         lprintf(TEST_INFO, "Waiting for nonce manager %d...\n", i);
         sleep(1);
     }
+    
+    pthread_mutex_lock(&mgr.lock_var);
+    ASSERT(mgr.nonces == 0);
+    pthread_mutex_unlock(&mgr.lock_var);
 
 		// Test for deadlocks after polling
     for (int i = 0; i < 1000; i++) {
