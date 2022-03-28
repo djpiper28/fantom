@@ -115,6 +115,15 @@ static int test_max_nonces()
 	
 }
 
+static int test_nonce_reserved()
+{
+		fantom_nonce_manager_t m;
+    m.nonces = 0;
+
+	  ASSERT(get_new_nonce_map_index(&m, 0) == -1);
+	  ASSERT(get_new_nonce_map_index(&m, NONCE_MAP_GRAVE_MARKER) == -1);
+}
+
 int test_security()
 {
     unit_test tests[] = {
@@ -122,7 +131,8 @@ int test_security()
         {&test_get_salt, "test_get_salt"},
         {&test_hash_password, "test_hash_password"},
         {&test_nonce_manager_deadlocks, "test_nonce_manager_deadlocks"},
-				{&test_max_nonces, "test_max_nonces"}
+				{&test_max_nonces, "test_max_nonces"},
+				{&test_nonce_reserved, "test_nonce_reserved"}
     };
 
     return run_tests(tests, TESTS_SIZE(tests), "security.c");

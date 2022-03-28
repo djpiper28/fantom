@@ -11,7 +11,7 @@
 
 int get_new_nonce_map_index(fantom_nonce_manager_t *mgr, unsigned int nonce)
 {
-    if (mgr->nonces + 1 >= NONCE_MAX_COUNT || nonce == NONCE_MAP_GRAVE_MARKER) {
+    if (mgr->nonces + 1 >= NONCE_MAX_COUNT || nonce == NONCE_MAP_GRAVE_MARKER || nonce == 0) {
         return -1;
     }
 
