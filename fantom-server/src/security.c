@@ -43,6 +43,8 @@ int get_nonce_map_index(fantom_nonce_manager_t *mgr, unsigned int nonce)
 fantom_status_t nonce_map_recompute(fantom_nonce_manager_t *mgr)
 {
     memset(mgr->nonce_map, 0, sizeof(* mgr->nonce_map) * NONCE_MAP_SIZE);
+    int tmp = mgr->nonces;
+    mgr->nonces = 0; // Override the length check
 
     // All nonces in the queue are placed in the new map
     for (int i = mgr->front_ptr; i != mgr->back_ptr; i = (i + 1) % NONCE_MAX_COUNT) {
@@ -53,6 +55,8 @@ fantom_status_t nonce_map_recompute(fantom_nonce_manager_t *mgr)
             mgr->nonce_map[index] = mgr->nonce_queue[i].nonce;
         }
     }
+
+    mgr->nonces = tmp; // Replace the length
 
     return FANTOM_SUCCESS;
 }
