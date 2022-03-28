@@ -27,12 +27,12 @@ int get_new_nonce_map_index(fantom_nonce_manager_t *mgr, unsigned int nonce)
 
 int get_nonce_map_index(fantom_nonce_manager_t *mgr, unsigned int nonce)
 {
-    for (int i = nonce % NONCE_MAP_SIZE;; i = (i + 1) % NONCE_MAP_SIZE) {
+    for (int i = nonce % NONCE_MAP_SIZE; 1; i = (i + 1) % NONCE_MAP_SIZE) {
         if (mgr->nonce_map[i] == nonce) {
             return i;
         }
 
-        if (mgr->nonce_map[i] != nonce && mgr->nonce_map[i] != NONCE_MAP_GRAVE_MARKER) {
+        if (mgr->nonce_map[i] != 0) {
         	return -1;
         }
     }
@@ -182,7 +182,24 @@ fantom_status_t get_nonce(fantom_nonce_manager_t *mgr, unsigned int *ret)
 
 fantom_status_t use_nonce(fantom_nonce_manager_t *mgr, unsigned int nonce)
 {
+    // FAIL early
+    if (nonce == 0 || nonce == NONCE_MAP_GRAVE_MARKER) {
+    	  return FANTOM_FAIL;
+    }
 
+    pthread_mutex_lock(&mgr->lock_var);
+    fantom_status_t status;
+    int index = get_nonce_map_index(mgr, nonce);
+    if (index == -1) {
+    	  status = FANTOM_FAIL;
+    } else {
+    	  status = FANTOM_SUCCESS;
+    	  mgr->nonce_map[index] = NONCE_MAP_GRAVE_MARKER;
+    	  mgr->nonces--;
+    }
+    pthread_mutex_unlock(&mgr->lock_var);
+
+		return status;
 }
 
 void init_seed()

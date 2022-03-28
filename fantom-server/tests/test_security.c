@@ -51,6 +51,7 @@ static int test_nonce_manager_deadlocks()
     unsigned int r;
     for (int i = 0; i < 1000; i++) {
         get_nonce(&mgr, &r);
+        use_nonce(&mgr, r);
     }
 
 		// Wait for a few rounds of polling
@@ -59,13 +60,13 @@ static int test_nonce_manager_deadlocks()
         sleep(1);
     }
     
-    pthread_mutex_lock(&mgr.lock_var);
-    ASSERT(mgr.nonces == 0);
-    pthread_mutex_unlock(&mgr.lock_var);
-
 		// Test for deadlocks after polling
     for (int i = 0; i < 1000; i++) {
         get_nonce(&mgr, &r);
+        use_nonce(&mgr, r);
+        use_nonce(&mgr, r);
+        use_nonce(&mgr, r);
+        use_nonce(&mgr, 180);
     }
 
     lprintf(TEST_INFO, "Locking...\n");
@@ -90,10 +91,20 @@ static int test_max_nonces()
     void *ret;
     pthread_join(mgr.poll_thread, &ret);
     
-    unsigned int r;
+    unsigned int r, old_r;
+    int old_back;
     for (int i = 0; i < NONCE_MAX_COUNT - 1; i++) {
         ASSERT(get_nonce(&mgr, &r) == FANTOM_SUCCESS);
+        ASSERT(get_nonce_map_index(&mgr, r) != -1);
+        ASSERT(mgr.nonce_map[get_nonce_map_index(&mgr, r)] == r);
  				ASSERT(mgr.nonces == i + 1);
+
+				if (i != 0) {
+					  ASSERT(r != old_r);
+					  ASSERT(old_back == mgr.back_ptr - 1);
+				}
+ 				old_r = r;
+ 				old_back = mgr.back_ptr;
     }
     
     // Test the nonce counter is inced
@@ -146,6 +157,51 @@ static int test_nonce_duplication()
 	  return 1;
 }
 
+static int test_use_nonce()
+{
+    fantom_nonce_manager_t mgr;
+    init_nonce_manager(&mgr);
+    
+    pthread_mutex_lock(&mgr.lock_var);
+    ASSERT(mgr.nonces == 0);
+    mgr.poll_thread_running = 0;
+    pthread_mutex_unlock(&mgr.lock_var);
+
+    void *ret;
+    pthread_join(mgr.poll_thread, &ret);
+
+    ASSERT(use_nonce(&mgr, 0) == FANTOM_FAIL);
+    ASSERT(use_nonce(&mgr, NONCE_MAP_GRAVE_MARKER) == FANTOM_FAIL);
+    for (int i = 0; i < 1000; i++) {
+        ASSERT(use_nonce(&mgr, rand()) == FANTOM_FAIL);
+		}
+    
+    unsigned int r;
+    for (int i = 0; i < NONCE_MAX_COUNT; i++) {
+        ASSERT(get_nonce(&mgr, &r) == FANTOM_SUCCESS);
+        ASSERT(get_nonce_map_index(&mgr, r) != -1);
+        ASSERT(mgr.nonce_map[get_nonce_map_index(&mgr, r)] == r);
+        
+        ASSERT(use_nonce(&mgr, r) == FANTOM_SUCCESS);
+        ASSERT(mgr.nonce_map[get_nonce_map_index(&mgr, r)] == NONCE_MAP_GRAVE_MARKER);
+
+        // Using this again is illegal
+        ASSERT(use_nonce(&mgr, r) == FANTOM_FAIL);
+        ASSERT(use_nonce(&mgr, r) == FANTOM_FAIL);
+        ASSERT(use_nonce(&mgr, r) == FANTOM_FAIL);
+
+        ASSERT(mgr.nonces == i + 1);
+    }
+
+    lprintf(TEST_INFO, "Locking...\n");
+    pthread_mutex_lock(&mgr.lock_var);
+    pthread_mutex_unlock(&mgr.lock_var);
+
+	  free_nonce_manager(&mgr);
+	  return 1;
+	
+}
+
 int test_security()
 {
     unit_test tests[] = {
@@ -155,7 +211,8 @@ int test_security()
         {&test_nonce_manager_deadlocks, "test_nonce_manager_deadlocks"},
 				{&test_max_nonces, "test_max_nonces"},
 				{&test_nonce_reserved, "test_nonce_reserved"},
-				{&test_nonce_duplication, "test_nonce_duplication"}
+				{&test_nonce_duplication, "test_nonce_duplication"},
+				{&test_use_nonce, "test_use_nonce"}
     };
 
     return run_tests(tests, TESTS_SIZE(tests), "security.c");
