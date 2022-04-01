@@ -18,12 +18,18 @@ static void cb(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
     if (ev == MG_EV_HTTP_MSG) {
         struct mg_http_message *hm = ev_data;
         fantom_server_t s = *(fantom_server_t *) fn_data;
-        
+
+        char uri[1024];
+        strncpy(uri, hm->uri.ptr, MIN(sizeof(uri), hm->uri.len));
+        uri[sizeof(uri)] = 0;
+
+        lprintf(LOG_INFO, "%s\n", uri);
+
         if (mg_http_match_uri(hm, "/api/get_nonce")) {
-             get_nonce_enp(c, s);
-				} else {
-					   mg_http_reply(c, 404, NULL, "404 - Page not found");
-				}
+            get_nonce_enp(c, s);
+        } else {
+            mg_http_reply(c, 404, NULL, "404 - Page not found");
+        }
     }
 }
 
@@ -37,7 +43,7 @@ void start_fantom_server(fantom_config_t *config, fantom_db_t *db)
     fantom_nonce_manager_t nonce_mgr;
     init_nonce_manager(&nonce_mgr);
 
-		fantom_server_t fantom_server = {config, db, &nonce_mgr};
+    fantom_server_t fantom_server = {config, db, &nonce_mgr};
     struct mg_mgr mgr;
     mg_log_set(MG_DEBUG_LVL);
     mg_mgr_init(&mgr);

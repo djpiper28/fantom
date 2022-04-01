@@ -47,20 +47,20 @@ static int test_nonce_manager_deadlocks()
     fantom_nonce_manager_t mgr;
     init_nonce_manager(&mgr);
 
-		// Test for deadlocks in get nonce
+    // Test for deadlocks in get nonce
     unsigned int r;
     for (int i = 0; i < 1000; i++) {
         get_nonce(&mgr, &r);
         use_nonce(&mgr, r);
     }
 
-		// Wait for a few rounds of polling
+    // Wait for a few rounds of polling
     for (int i = NONCE_TIMEOUT_S + 2; i > 0; i--) {
         lprintf(TEST_INFO, "Waiting for nonce manager %d...\n", i);
         sleep(1);
     }
-    
-		// Test for deadlocks after polling
+
+    // Test for deadlocks after polling
     for (int i = 0; i < 1000; i++) {
         get_nonce(&mgr, &r);
         use_nonce(&mgr, r);
@@ -90,23 +90,23 @@ static int test_max_nonces()
 
     void *ret;
     pthread_join(mgr.poll_thread, &ret);
-    
+
     unsigned int r, old_r;
     int old_back;
     for (int i = 0; i < NONCE_MAX_COUNT - 1; i++) {
         ASSERT(get_nonce(&mgr, &r) == FANTOM_SUCCESS);
         ASSERT(get_nonce_map_index(&mgr, r) != -1);
         ASSERT(mgr.nonce_map[get_nonce_map_index(&mgr, r)] == r);
- 				ASSERT(mgr.nonces == i + 1);
+        ASSERT(mgr.nonces == i + 1);
 
-				if (i != 0) {
-					  ASSERT(r != old_r);
-					  ASSERT(old_back == mgr.back_ptr - 1);
-				}
- 				old_r = r;
- 				old_back = mgr.back_ptr;
+        if (i != 0) {
+            ASSERT(r != old_r);
+            ASSERT(old_back == mgr.back_ptr - 1);
+        }
+        old_r = r;
+        old_back = mgr.back_ptr;
     }
-    
+
     // Test the nonce counter is inced
     pthread_mutex_lock(&mgr.lock_var);
     ASSERT(mgr.nonces == NONCE_MAX_COUNT - 1);
@@ -123,17 +123,17 @@ static int test_max_nonces()
 
     free_nonce_manager(&mgr);
     return 1;
-	
+
 }
 
 static int test_nonce_reserved()
 {
-		fantom_nonce_manager_t m;
+    fantom_nonce_manager_t m;
     m.nonces = 0;
 
-	  ASSERT(get_new_nonce_map_index(&m, 0) == -1);
-	  ASSERT(get_new_nonce_map_index(&m, NONCE_MAP_GRAVE_MARKER) == -1);
-	  return 1;
+    ASSERT(get_new_nonce_map_index(&m, 0) == -1);
+    ASSERT(get_new_nonce_map_index(&m, NONCE_MAP_GRAVE_MARKER) == -1);
+    return 1;
 }
 
 static int test_nonce_duplication()
@@ -152,16 +152,16 @@ static int test_nonce_duplication()
     // Test adding duplicates fails
     mgr.nonce_map[1] = 1;
     ASSERT(get_new_nonce_map_index(&mgr, 1) == -1);
-	  
-	  free_nonce_manager(&mgr);
-	  return 1;
+
+    free_nonce_manager(&mgr);
+    return 1;
 }
 
 static int test_use_nonce()
 {
     fantom_nonce_manager_t mgr;
     init_nonce_manager(&mgr);
-    
+
     pthread_mutex_lock(&mgr.lock_var);
     ASSERT(mgr.nonces == 0);
     mgr.poll_thread_running = 0;
@@ -174,14 +174,14 @@ static int test_use_nonce()
     ASSERT(use_nonce(&mgr, NONCE_MAP_GRAVE_MARKER) == FANTOM_FAIL);
     for (int i = 0; i < 1000; i++) {
         ASSERT(use_nonce(&mgr, rand()) == FANTOM_FAIL);
-		}
-    
+    }
+
     unsigned int r;
     for (int i = 0; i < NONCE_MAX_COUNT; i++) {
         ASSERT(get_nonce(&mgr, &r) == FANTOM_SUCCESS);
         ASSERT(get_nonce_map_index(&mgr, r) != -1);
         ASSERT(mgr.nonce_map[get_nonce_map_index(&mgr, r)] == r);
-        
+
         ASSERT(use_nonce(&mgr, r) == FANTOM_SUCCESS);
         ASSERT(get_nonce_map_index(&mgr, r) == -1);
 
@@ -197,9 +197,9 @@ static int test_use_nonce()
     pthread_mutex_lock(&mgr.lock_var);
     pthread_mutex_unlock(&mgr.lock_var);
 
-	  free_nonce_manager(&mgr);
-	  return 1;
-	
+    free_nonce_manager(&mgr);
+    return 1;
+
 }
 
 int test_security()
@@ -209,10 +209,10 @@ int test_security()
         {&test_get_salt, "test_get_salt"},
         {&test_hash_password, "test_hash_password"},
         {&test_nonce_manager_deadlocks, "test_nonce_manager_deadlocks"},
-				{&test_max_nonces, "test_max_nonces"},
-				{&test_nonce_reserved, "test_nonce_reserved"},
-				{&test_nonce_duplication, "test_nonce_duplication"},
-				{&test_use_nonce, "test_use_nonce"}
+        {&test_max_nonces, "test_max_nonces"},
+        {&test_nonce_reserved, "test_nonce_reserved"},
+        {&test_nonce_duplication, "test_nonce_duplication"},
+        {&test_use_nonce, "test_use_nonce"}
     };
 
     return run_tests(tests, TESTS_SIZE(tests), "security.c");

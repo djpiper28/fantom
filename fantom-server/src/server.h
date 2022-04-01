@@ -9,10 +9,12 @@
 #define MG_DEBUG_LVL "1"
 #endif
 
+#define MIN(a, b) (a < b ? a : b)
+
 typedef struct fantom_server_t {
-	fantom_config_t *conf;
-	fantom_db_t *db;
-	fantom_nonce_manager_t *nonce_mgr;
+    fantom_config_t *conf;
+    fantom_db_t *db;
+    fantom_nonce_manager_t *nonce_mgr;
 } fantom_server_t;
 
 void start_fantom_server(fantom_config_t *config, fantom_db_t *db);

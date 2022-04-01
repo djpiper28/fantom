@@ -33,7 +33,7 @@ int get_nonce_map_index(fantom_nonce_manager_t *mgr, unsigned int nonce)
         }
 
         if (mgr->nonce_map[i] == 0) {
-        	return -1;
+            return -1;
         }
     }
 
@@ -70,7 +70,7 @@ static void *nonce_manager_poll_thread(void *mgr_in)
         pthread_mutex_lock(&mgr->lock_var);
         running = mgr->poll_thread_running;
 
-				// Invalidate old nonces
+        // Invalidate old nonces
         long ct = time(NULL);
         int recomp = mgr->front_ptr != mgr->back_ptr;
         for (int i = mgr->front_ptr; i != mgr->back_ptr; i = (i + 1) % NONCE_MAX_COUNT) {
@@ -82,10 +82,10 @@ static void *nonce_manager_poll_thread(void *mgr_in)
             }
         }
 
-				// Recompute map if nonces were removed
-				if (recomp) {
-             nonce_map_recompute(mgr);
-				}
+        // Recompute map if nonces were removed
+        if (recomp) {
+            nonce_map_recompute(mgr);
+        }
 
         pthread_mutex_unlock(&mgr->lock_var);
         usleep(NONCE_POLL_TIME_MS * 1000);
@@ -113,7 +113,7 @@ fantom_status_t init_nonce_manager(fantom_nonce_manager_t *nonce_mgr)
         return FANTOM_FAIL;
     }
 
-		nonce_mgr->nonces = 0;
+    nonce_mgr->nonces = 0;
     nonce_mgr->poll_thread_running = 1;
     pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
     nonce_mgr->lock_var = mut;
@@ -121,9 +121,9 @@ fantom_status_t init_nonce_manager(fantom_nonce_manager_t *nonce_mgr)
     // Start the thread
     int status = pthread_create(&nonce_mgr->poll_thread, NULL, nonce_manager_poll_thread, (void *) nonce_mgr);
     if (status != 0) {
-    	  lprintf(LOG_ERROR, "Cannot create nonce polling thread %d\n", status);
-    	  free_nonce_manager(nonce_mgr);
-    	  return FANTOM_FAIL;
+        lprintf(LOG_ERROR, "Cannot create nonce polling thread %d\n", status);
+        free_nonce_manager(nonce_mgr);
+        return FANTOM_FAIL;
     }
 
     return FANTOM_SUCCESS;
@@ -184,22 +184,22 @@ fantom_status_t use_nonce(fantom_nonce_manager_t *mgr, unsigned int nonce)
 {
     // FAIL early
     if (nonce == 0 || nonce == NONCE_MAP_GRAVE_MARKER) {
-    	  return FANTOM_FAIL;
+        return FANTOM_FAIL;
     }
 
     pthread_mutex_lock(&mgr->lock_var);
     fantom_status_t status;
     int index = get_nonce_map_index(mgr, nonce);
     if (index == -1) {
-    	  status = FANTOM_FAIL;
+        status = FANTOM_FAIL;
     } else {
-    	  status = FANTOM_SUCCESS;
-    	  mgr->nonce_map[index] = NONCE_MAP_GRAVE_MARKER;
-    	  mgr->nonces--;
+        status = FANTOM_SUCCESS;
+        mgr->nonce_map[index] = NONCE_MAP_GRAVE_MARKER;
+        mgr->nonces--;
     }
     pthread_mutex_unlock(&mgr->lock_var);
 
-		return status;
+    return status;
 }
 
 void init_seed()
