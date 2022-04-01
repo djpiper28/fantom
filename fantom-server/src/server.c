@@ -19,11 +19,15 @@ static void cb(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
         struct mg_http_message *hm = ev_data;
         fantom_server_t s = *(fantom_server_t *) fn_data;
 
-        char uri[1024];
-        strncpy(uri, hm->uri.ptr, MIN(sizeof(uri), hm->uri.len));
-        uri[sizeof(uri)] = 0;
+        char uri[256];
+        size_t len = MIN(sizeof(uri), hm->uri.len);
+        strncpy(uri, hm->uri.ptr, len);
+        uri[len] = 0;
 
-        lprintf(LOG_INFO, "%s\n", uri);
+        char ip_addr[sizeof("255.255.255.255")];
+        mg_ntoa(&c->rem, ip_addr, sizeof(ip_addr));
+
+        lprintf(LOG_INFO, "%s%s\n", ip_addr, uri);
 
         if (mg_http_match_uri(hm, "/api/get_nonce")) {
             get_nonce_enp(c, s);
