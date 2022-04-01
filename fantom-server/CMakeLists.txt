@@ -88,6 +88,7 @@ set(SRC_FILES
     src/db.c
     src/mongoose.c
     src/utils.c
+    src/enp/get_nonce.c
     )
 
 set(LIBS

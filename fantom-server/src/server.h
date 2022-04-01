@@ -9,11 +9,11 @@
 #define MG_DEBUG_LVL "1"
 #endif
 
-struct fantom_server_t {
+typedef struct fantom_server_t {
 	fantom_config_t *conf;
 	fantom_db_t *db;
 	fantom_nonce_manager_t *nonce_mgr;
-}
+} fantom_server_t;
 
 void start_fantom_server(fantom_config_t *config, fantom_db_t *db);
 

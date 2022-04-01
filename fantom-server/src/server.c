@@ -4,6 +4,7 @@
 #include "logger.h"
 #include "server.h"
 #include "security.h"
+#include "enp/get_nonce.h"
 
 static int running = 1;
 static void signal_handler(int signo)
@@ -16,8 +17,13 @@ static void cb(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
 {
     if (ev == MG_EV_HTTP_MSG) {
         struct mg_http_message *hm = ev_data;
-        lprintf(LOG_INFO, "%s\n", hm->uri.ptr);
-        c->is_closing = 1;
+        fantom_server_t s = *(fantom_server_t *) fn_data;
+        
+        if (mg_http_match_uri(hm, "/api/get_nonce")) {
+             get_nonce_enp(c, s);
+				} else {
+					   mg_http_reply(c, 404, NULL, "404 - Page not found");
+				}
     }
 }
 
@@ -31,11 +37,12 @@ void start_fantom_server(fantom_config_t *config, fantom_db_t *db)
     fantom_nonce_manager_t nonce_mgr;
     init_nonce_manager(&nonce_mgr);
 
+		fantom_server_t fantom_server = {config, db, &nonce_mgr};
     struct mg_mgr mgr;
     mg_log_set(MG_DEBUG_LVL);
     mg_mgr_init(&mgr);
 
-    struct mg_connection *c = mg_http_listen(&mgr, config->bind_url, cb, &mgr);
+    struct mg_connection *c = mg_http_listen(&mgr, config->bind_url, cb, &fantom_server);
     if (c == NULL) {
         lprintf(LOG_ERROR, "Cannot start server on %s\n", config->bind_url);
         return;
