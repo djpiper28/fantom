@@ -31,6 +31,7 @@ fantom_status_t fantom_init_config(FILE *input, fantom_config_t *output)
     char *db_file = NULL;
     char *bind_url = NULL;
     int max_log_age_days = -1;
+    int jwt_expire = -1;
     char *ptr = read_file(input);
 
     fantom_status_t status = FANTOM_SUCCESS;
@@ -84,12 +85,19 @@ fantom_status_t fantom_init_config(FILE *input, fantom_config_t *output)
                 lprintf(LOG_ERROR, "max_log_age_days is not an integer in the config file\n");
             }
 
+            jtmp = json_object_get(root, "jwt_expire");
+            if (json_is_number(jtmp)) {
+                jwt_expire = json_number_value(jtmp);
+            } else {
+                lprintf(LOG_ERROR, "jwt_expire is not an integer in the config file\n");
+            }
+
             json_decref(root);
         }
     }
 
     if (status) {
-        status = db_file != NULL && bind_url != NULL && max_log_age_days > 0;
+        status = db_file != NULL && bind_url != NULL && max_log_age_days > 0 && jwt_expire > 0;
     }
 
     if (db_file != NULL) {

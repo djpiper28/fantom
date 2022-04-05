@@ -8,6 +8,7 @@
 #include <openssl/evp.h>
 #include "security.h"
 #include "logger.h"
+#include "l8w8jwt/encode.h"
 
 int get_new_nonce_map_index(fantom_nonce_manager_t *mgr, unsigned int nonce)
 {
@@ -317,5 +318,77 @@ char *hash_password(char *password, char *salt)
     free(digest);
 
     return hex_hash;
+}
+
+static char *get_issuer()
+{
+    size_t len = 256;
+    char *ret = malloc(sizeof(*ret) * len);
+    if (ret == NULL) {
+    	  lprintf(LOG_ERROR, "Cannot allocate memory\n");
+    } else {
+        int r = gethostname(ret, len);
+        if (r != -1) {
+      	    lprintf(LOG_ERROR, "Cannot get hostname\n");
+      	    strncpy(ret, "f@ntom", len);
+        }
+		}
+    ret[len -1] = 0;
+		
+    return ret;
+}
+
+char *issue_token(int uid, char *name, char *jwt_secret, fantom_config_t *config)
+{
+    char uid_buffer[256];
+    snprintf(uid_buffer, sizeof(uid_buffer), "%d", uid);
+    
+    char *jwt;
+    char *issuer = get_issuer();
+    if (issuer == NULL) {
+    		return NULL;
+    }
+    
+    size_t jwt_length;
+    struct l8w8jwt_encoding_params params;
+    l8w8jwt_encoding_params_init(&params);
+
+    params.alg = L8W8JWT_ALG_HS512;
+
+    params.sub = uid_buffer;
+    params.iss = issuer;
+    params.aud = name;
+
+    params.iat = time(NULL);
+    params.exp = params.iat + config->jwt_expire;
+
+    params.secret_key = (unsigned char*) jwt_secret;
+    params.secret_key_length = strlen(jwt_secret);
+
+    params.out = &jwt;
+    params.out_length = &jwt_length;
+
+    int r = l8w8jwt_encode(&params);
+		char *ret = NULL;
+		
+    if (r != L8W8JWT_SUCCESS) {
+    	  lprintf(LOG_ERROR, "JWT encoding error\n");
+    } else {
+  		  // Copy the string to a non l8 string
+	  	  ret = malloc(sizeof(*ret) * (strlen(jwt) + 1));
+	  	  strcpy(ret, jwt);
+		}
+
+		if (issuer != NULL) {
+         free(issuer);
+		}
+    l8w8jwt_free(jwt);
+
+    return ret;
+}
+
+fantom_status_t use_token(char *token, char *jwt_secret, fantom_config_t *config)
+{
+    return FANTOM_FAIL;
 }
 

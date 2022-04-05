@@ -1,6 +1,7 @@
 #pragma once
 #include <pthread.h>
 #include "fantom_utils.h"
+#include "config.h"
 
 #define SALT_CHARS "abdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/*-+,.?/<>:@~;'#"
 #define SALT_LENGTH 256
@@ -46,7 +47,12 @@ fantom_status_t use_nonce(fantom_nonce_manager_t *mgr, unsigned int nonce);
 int get_new_nonce_map_index(fantom_nonce_manager_t *mgr, unsigned int nonce); // not thread safe
 int get_nonce_map_index(fantom_nonce_manager_t *mgr, unsigned int nonce);     // not thread safe
 
+// Password stuff
 void init_seed();
 char *get_salt();
 char *hash_password(char *password, char *salt);
+
+// JWT stuff
+char *issue_token(int uid, char *name, char *jwt_secret, fantom_config_t *config);
+fantom_status_t use_token(char *token, char *jwt_secret, fantom_config_t *config);
 

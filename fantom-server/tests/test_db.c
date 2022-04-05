@@ -29,6 +29,8 @@ static int test_init_free()
     ASSERT(access(TEST_DB, F_OK) == 0);
     ASSERT(init_db(&db, TEST_DB) == FANTOM_SUCCESS);
     free_db(&db);
+
+    return 1;
 }
 
 int test_db()
