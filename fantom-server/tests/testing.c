@@ -17,7 +17,7 @@ int test_func(int (*test_method)(), const char *test_name)
 int run_tests(unit_test *tests, size_t number, const char *module_name)
 {
     size_t failed = 0;
-    lprintf(TEST_INFO, "Running %ld tests for %s\n", number, module_name);
+    lprintf(TEST_INFO, "Running %ld tests for %s...\n\n\n\n", number, module_name);
     for (size_t i = 0; i < number; i++) {
         unit_test test = tests[i];
         int status = test_func(test.test_method, test.test_name);

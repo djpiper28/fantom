@@ -325,16 +325,16 @@ static char *get_issuer()
     size_t len = 256;
     char *ret = malloc(sizeof(*ret) * len);
     if (ret == NULL) {
-    	  lprintf(LOG_ERROR, "Cannot allocate memory\n");
+        lprintf(LOG_ERROR, "Cannot allocate memory\n");
     } else {
         int r = gethostname(ret, len);
-        if (r != -1) {
-      	    lprintf(LOG_ERROR, "Cannot get hostname\n");
-      	    strncpy(ret, "f@ntom", len);
+        if (r == -1) {
+            lprintf(LOG_ERROR, "Cannot get hostname\n");
+            strncpy(ret, "f@ntom", len);
         }
-		}
+    }
     ret[len -1] = 0;
-		
+
     return ret;
 }
 
@@ -342,13 +342,13 @@ char *issue_token(int uid, char *name, char *jwt_secret, fantom_config_t *config
 {
     char uid_buffer[256];
     snprintf(uid_buffer, sizeof(uid_buffer), "%d", uid);
-    
+
     char *jwt;
     char *issuer = get_issuer();
     if (issuer == NULL) {
-    		return NULL;
+        return NULL;
     }
-    
+
     size_t jwt_length;
     struct l8w8jwt_encoding_params params;
     l8w8jwt_encoding_params_init(&params);
@@ -369,19 +369,19 @@ char *issue_token(int uid, char *name, char *jwt_secret, fantom_config_t *config
     params.out_length = &jwt_length;
 
     int r = l8w8jwt_encode(&params);
-		char *ret = NULL;
-		
-    if (r != L8W8JWT_SUCCESS) {
-    	  lprintf(LOG_ERROR, "JWT encoding error\n");
-    } else {
-  		  // Copy the string to a non l8 string
-	  	  ret = malloc(sizeof(*ret) * (strlen(jwt) + 1));
-	  	  strcpy(ret, jwt);
-		}
+    char *ret = NULL;
 
-		if (issuer != NULL) {
-         free(issuer);
-		}
+    if (r != L8W8JWT_SUCCESS) {
+        lprintf(LOG_ERROR, "JWT encoding error\n");
+    } else {
+        // Copy the string to a non l8 string
+        ret = malloc(sizeof(*ret) * (strlen(jwt) + 1));
+        strcpy(ret, jwt);
+    }
+
+    if (issuer != NULL) {
+        free(issuer);
+    }
     l8w8jwt_free(jwt);
 
     return ret;
