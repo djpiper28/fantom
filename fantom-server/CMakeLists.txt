@@ -74,6 +74,11 @@ if (CMAKE_BUILD_TYPE STREQUAL "TEST")
         EXCLUDE "build/*" "tests/*" "src/mongoose.c" "src/mongoose.h")
 endif()
 
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+	link_directories("/opt/homebrew/lib")
+	include_directories("/opt/homebrew/include")
+endif()
+
 # src
 set(MAIN_FILE
     src/main.c
