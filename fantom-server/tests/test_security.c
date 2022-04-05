@@ -218,6 +218,24 @@ int test_encode_jwt()
     return 1;
 }
 
+int test_decode_jwt()
+{
+    fantom_config_t config;
+    config.jwt_expire = 60 * 60 * 24 * 7;
+
+    int uid = 180;
+    char *name = "fantom user #69";
+    char *jwt_secret = "ReAlLy_ SEcUrE JWt - SEcret";
+    char *ret = issue_token(uid, name, jwt_secret, &config);
+    ASSERT(ret != NULL);
+    ASSERT(strlen(ret) != 0);
+
+    ASSERT(use_token(ret, jwt_secret, &config) == FANTOM_SUCCESS);
+    free(ret);
+
+    return 1;
+}
+
 int test_security()
 {
     unit_test tests[] = {
@@ -229,7 +247,8 @@ int test_security()
         {&test_nonce_reserved, "test_nonce_reserved"},
         {&test_nonce_duplication, "test_nonce_duplication"},
         {&test_use_nonce, "test_use_nonce"},
-        {&test_encode_jwt, "test_encode_jwt"}
+        {&test_encode_jwt, "test_encode_jwt"},
+				{&test_decode_jwt, "test_decode_jwt"}
     };
 
     return run_tests(tests, TESTS_SIZE(tests), "security.c");

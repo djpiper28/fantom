@@ -9,6 +9,7 @@
 #include "security.h"
 #include "logger.h"
 #include "l8w8jwt/encode.h"
+#include "l8w8jwt/decode.h"
 
 int get_new_nonce_map_index(fantom_nonce_manager_t *mgr, unsigned int nonce)
 {
@@ -322,18 +323,23 @@ char *hash_password(char *password, char *salt)
 
 static char *get_issuer()
 {
-    size_t len = 256;
+    // Get hostname
+    char hostname_buffer[256];
+    int r = gethostname(hostname_buffer, sizeof(hostname_buffer));
+    if (r == -1) {
+        lprintf(LOG_ERROR, "Cannot get hostname\n");
+        strncpy(hostname_buffer, "f@ntom", sizeof(hostname_buffer));
+    }
+    hostname_buffer[sizeof(hostname_buffer) - 1] = 0;
+
+    size_t len = 300;
     char *ret = malloc(sizeof(*ret) * len);
     if (ret == NULL) {
         lprintf(LOG_ERROR, "Cannot allocate memory\n");
-    } else {
-        int r = gethostname(ret, len);
-        if (r == -1) {
-            lprintf(LOG_ERROR, "Cannot get hostname\n");
-            strncpy(ret, "f@ntom", len);
-        }
+        return NULL;
     }
-    ret[len -1] = 0;
+
+    snprintf(ret, len, "%s-%d", hostname_buffer, getpid());
 
     return ret;
 }
@@ -341,7 +347,7 @@ static char *get_issuer()
 char *issue_token(int uid, char *name, char *jwt_secret, fantom_config_t *config)
 {
     char uid_buffer[256];
-    snprintf(uid_buffer, sizeof(uid_buffer), "%d", uid);
+    snprintf(uid_buffer, sizeof(uid_buffer), "%d-%s", uid, name);
 
     char *jwt;
     char *issuer = get_issuer();
@@ -357,7 +363,7 @@ char *issue_token(int uid, char *name, char *jwt_secret, fantom_config_t *config
 
     params.sub = uid_buffer;
     params.iss = issuer;
-    params.aud = name;
+    params.aud = FANTOM_AUD;
 
     params.iat = time(NULL);
     params.exp = params.iat + config->jwt_expire;
@@ -389,6 +395,40 @@ char *issue_token(int uid, char *name, char *jwt_secret, fantom_config_t *config
 
 fantom_status_t use_token(char *token, char *jwt_secret, fantom_config_t *config)
 {
-    return FANTOM_FAIL;
+    char *issuer = get_issuer();
+    if (issuer == NULL) {
+        return FANTOM_FAIL;
+    }
+
+    struct l8w8jwt_decoding_params params;
+    l8w8jwt_decoding_params_init(&params);
+
+    params.alg = L8W8JWT_ALG_HS512;
+
+    params.jwt = (char *) token;
+    params.jwt_length = strlen(token);
+
+    params.verification_key = (unsigned char *) jwt_secret;
+    params.verification_key_length = strlen(jwt_secret);
+
+    params.validate_iss = issuer;
+    params.exp_tolerance_seconds = FANTOM_TIME_TOLERANCE;
+    params.iat_tolerance_seconds = FANTOM_TIME_TOLERANCE;
+
+    enum l8w8jwt_validation_result validation_result;
+    int decode_result = l8w8jwt_decode(&params, &validation_result, NULL, NULL);
+    fantom_status_t ret;
+    if (decode_result == L8W8JWT_SUCCESS && validation_result == L8W8JWT_VALID) {
+        ret = FANTOM_SUCCESS;
+    } else {
+        lprintf(LOG_ERROR, "Illegal access request (validation: %x) (decode: %x)\n", validation_result, decode_result);
+        ret = FANTOM_FAIL;
+    }
+
+    if (issuer != NULL) {
+        free(issuer);
+    }
+
+    return ret;
 }
 
