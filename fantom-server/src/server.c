@@ -4,7 +4,14 @@
 #include "logger.h"
 #include "server.h"
 #include "security.h"
+#include "utils.h"
 #include "enp/get_nonce.h"
+
+#define PREFLIGHT_METHOD "OPTIONS"
+#define HTTP_HEADER_END "\r\n"
+#define PREFLIGHT_HEADERS "Access-Control-Allow-Origin *" HTTP_HEADER_END\
+                          "Access-Control-Allow-Headers *" HTTP_HEADER_END
+// \r\n for HTTP right????!?
 
 static int running = 1;
 static void signal_handler(int signo)
@@ -29,7 +36,13 @@ static void cb(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
 
         lprintf(LOG_INFO, "%s%s\n", ip_addr, uri);
 
-        if (mg_http_match_uri(hm, "/api/get_nonce")) {
+        // Check for chrome preflights
+        if (strncmp(hm->method.ptr, PREFLIGHT_METHOD, min(hm->method.len, sizeof(PREFLIGHT_METHOD) / sizeof(char)))) {
+          mg_http_reply(c, 400, PREFLIGHT_HEADERS, "yes googel cro-emeum u can do this bruv");
+        }
+
+        // Route the requests
+        else if (mg_http_match_uri(hm, "/api/get_nonce")) {
             get_nonce_enp(c, s);
         } else {
             mg_http_reply(c, 404, NULL, "404 - Page not found");
