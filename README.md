@@ -57,6 +57,4 @@ it goes anywhere.
 # cd fantom-server/
 mkdir -p build
 cmake .. -DCMAKE_BUILD_TYPE=TEST && cmake --build . -j && ctest -V
-# You can also you ctest
-# But ctest is less verbose with the output to console
 ```
