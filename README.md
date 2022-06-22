@@ -56,7 +56,5 @@ it goes anywhere.
 ```bash
 # cd fantom-server/
 mkdir -p build
-cmake .. -DCMAKE_BUILD_TYPE=TEST && cmake --build . -j && make coverage
-# You can also you ctest
-# But ctest is less verbose with the output to console
+cmake .. -DCMAKE_BUILD_TYPE=TEST && cmake --build . -j && ctest -V
 ```
