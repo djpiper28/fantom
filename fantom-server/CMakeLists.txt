@@ -26,21 +26,20 @@ execute_process(
   COMMAND git rev-parse --abbrev-ref HEAD
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   OUTPUT_VARIABLE GIT_BRANCH
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 # Get the latest abbreviated commit hash of the working branch
 execute_process(
   COMMAND git log -1 --format=%h
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   OUTPUT_VARIABLE GIT_COMMIT_HASH
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 # Version info
 add_definitions("-DGIT_COMMIT_HASH=\"${GIT_COMMIT_HASH}\"")
 add_definitions("-DGIT_BRANCH=\"${GIT_BRANCH}\"")
-add_definitions("-DVERSION=\"${CMAKE_PROJECT_VERSION} (${GIT_COMMIT_HASH}@${GIT_BRANCH})\"")
+add_definitions(
+  "-DVERSION=\"${CMAKE_PROJECT_VERSION} (${GIT_COMMIT_HASH}@${GIT_BRANCH})\"")
 add_definitions("-DOS=\"${CMAKE_SYSTEM_NAME}\"")
 add_definitions("-DREPO_URL=\"${REPO_URL}\"")
 add_definitions("-DBUFFER_LENGTH=4096")
@@ -59,30 +58,34 @@ add_definitions(-DMG_ENABLE_FS=1)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake)
 
-if (CMAKE_BUILD_TYPE STREQUAL "TEST")
-    include(CodeCoverage)
+if(CMAKE_BUILD_TYPE STREQUAL "TEST")
+  include(CodeCoverage)
 
-    # Setup coverage (using gcovr so needs gcc/g++)
-		#set(CMAKE_C_COMPILER /usr/bin/gcc)
-		#set(CMAKE_CXX_COMPILER /usr/bin/g++)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_DEBUG} -DTEST")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG} -DTEST")
+  # Setup coverage (using gcovr so needs gcc/g++) set(CMAKE_C_COMPILER
+  # /usr/bin/gcc) set(CMAKE_CXX_COMPILER /usr/bin/g++)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_DEBUG} -DTEST")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG} -DTEST")
 
-    append_coverage_compiler_flags()
-    setup_target_for_coverage_gcovr_xml(NAME coverage
-        EXECUTABLE fantom-tests
-        EXCLUDE "build/*" "tests/*" "src/mongoose.c" "src/mongoose.h")
+  append_coverage_compiler_flags()
+  setup_target_for_coverage_gcovr_xml(
+    NAME
+    coverage
+    EXECUTABLE
+    fantom-tests
+    EXCLUDE
+    "build/*"
+    "tests/*"
+    "src/mongoose.c"
+    "src/mongoose.h")
 endif()
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-	link_directories("/opt/homebrew/lib")
-	include_directories("/opt/homebrew/include")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  link_directories("/opt/homebrew/lib")
+  include_directories("/opt/homebrew/include")
 endif()
 
 # src
-set(MAIN_FILE
-    src/main.c
-    )
+set(MAIN_FILE src/main.c)
 set(SRC_FILES
     src/banner.c
     src/config.c
@@ -93,61 +96,60 @@ set(SRC_FILES
     src/db.c
     src/mongoose.c
     src/utils.c
-    
     src/enp/get_nonce.c
-
-    src/monitoring/ram.c
-    )
+    src/monitoring/ram.c)
 
 set(LIBS
-    pthread    # threads
-    crypto     # password hashing
-    mbedtls    # v
+    pthread # threads
+    crypto # password hashing
+    mbedtls # v
     mbedcrypto # mongoose crypto
-    mbedx509   # ^
-    jansson    # json
-    sqlite3    # database
-    )
+    mbedx509 # ^
+    jansson # json
+    sqlite3 # database
+)
 
 # Build JWT library
 add_subdirectory(lib/l8w8jwt/)
 
 # Build fantom
 add_executable(fantom ${SRC_FILES} ${MAIN_FILE})
-target_link_libraries(fantom PUBLIC ${LIBS} PRIVATE l8w8jwt)
-target_include_directories(fantom PUBLIC
-    ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(
+  fantom
+  PUBLIC ${LIBS}
+  PRIVATE l8w8jwt)
+target_include_directories(fantom PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 # Copy test scripts
 file(COPY mem_tests.sh DESTINATION ${CMAKE_BINARY_DIR})
 file(COPY mem_tests.py DESTINATION ${CMAKE_BINARY_DIR})
 
 # Make tests when needed
-if (CMAKE_BUILD_TYPE STREQUAL "TEST")
-    # tests, set the flags manually
-    set(CMAKE_C_FLAGS_RELEASE ${CMAKE_C_FLAGS_DEBUG})
-    set(CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_DEBUG})
+if(CMAKE_BUILD_TYPE STREQUAL "TEST")
+  # tests, set the flags manually
+  set(CMAKE_C_FLAGS_RELEASE ${CMAKE_C_FLAGS_DEBUG})
+  set(CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_DEBUG})
 
-    set (TEST_FILES
-        ${SRC_FILES}
-        tests/main.c
-        tests/testing.c
-        tests/test_db.c
-        tests/test_config.c
-        tests/test_utils.c
-        tests/test_security.c
+  set(TEST_FILES
+      ${SRC_FILES}
+      tests/main.c
+      tests/testing.c
+      tests/test_db.c
+      tests/test_config.c
+      tests/test_utils.c
+      tests/test_security.c
+      tests/monitoring/test_ram.c)
+  add_executable(fantom-tests ${TEST_FILES})
+  target_link_libraries(
+    fantom-tests
+    PUBLIC ${LIBS}
+    PRIVATE l8w8jwt)
+  target_include_directories(fantom-tests PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
-        tests/monitoring/test_ram.c
-        )
-    add_executable(fantom-tests ${TEST_FILES})
-		target_link_libraries(fantom-tests PUBLIC ${LIBS} PRIVATE l8w8jwt)
-    target_include_directories(fantom-tests PUBLIC
-        ${CMAKE_CURRENT_BINARY_DIR})
+  enable_testing()
+  add_test(NAME init_tests COMMAND bash -c "rm -f *.json rm *.db")
+  add_test(NAME fantom-tests COMMAND fantom-tests)
+  add_test(NAME memory-tests COMMAND bash mem_tests.sh)
 
-    enable_testing ()
-    add_test(NAME fantom-tests COMMAND fantom-tests)
-		add_test(NAME memory-tests COMMAND bash mem_tests.sh)
-
-		message(STATUS "TEST build setup")
+  message(STATUS "TEST build setup")
 endif()
-
