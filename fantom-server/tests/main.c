@@ -6,6 +6,7 @@
 #include "./test_utils.h"
 #include "./test_security.h"
 #include "./monitoring/test_ram.h"
+#include "./monitoring/test_cpu.h"
 
 int main()
 {
@@ -19,6 +20,7 @@ int main()
     failed += test_utils();
     failed += test_security();
     failed += test_mon_ram();
+    failed += test_mon_cpu();
 
     if (failed == 0) {
         lprintf(LOG_INFO, "All unit tests passed\n");

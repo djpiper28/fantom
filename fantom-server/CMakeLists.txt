@@ -97,7 +97,8 @@ set(SRC_FILES
     src/mongoose.c
     src/utils.c
     src/enp/get_nonce.c
-    src/monitoring/ram.c)
+    src/monitoring/ram.c
+    src/monitoring/cpu.c)
 
 set(LIBS
     pthread # threads
@@ -138,7 +139,8 @@ if(CMAKE_BUILD_TYPE STREQUAL "TEST")
       tests/test_config.c
       tests/test_utils.c
       tests/test_security.c
-      tests/monitoring/test_ram.c)
+      tests/monitoring/test_ram.c
+      tests/monitoring/test_cpu.c)
   add_executable(fantom-tests ${TEST_FILES})
   target_link_libraries(
     fantom-tests
