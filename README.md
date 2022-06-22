@@ -27,6 +27,21 @@ application starts.
 | `pthread` | threading |
 | `sqlite3` | database |
 
+### Build Requirements
+
+| Requirement | Usage |
+|---|---|
+| `cmake` | Build system |
+| `gcc & g++` | Compilers |
+| `valgrind` | Memory analysis |
+| `python3` | Scripting |
+| `bash` | Scripting |
+| `astyle` | Formatter |
+| `black` | Formatter |
+| `cmake-format` | Formatter |
+| `gcovr` | Coverage tool |
+| `git` | VCS |
+
 ### Building
 ```bash
 # cd fantom-server/

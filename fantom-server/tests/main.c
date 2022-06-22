@@ -1,10 +1,11 @@
-#include "testing.h"
+#include "./testing.h"
 #include "../src/logger.h"
 #include "../src/banner.h"
-#include "test_db.h"
-#include "test_config.h"
-#include "test_utils.h"
-#include "test_security.h"
+#include "./test_db.h"
+#include "./test_config.h"
+#include "./test_utils.h"
+#include "./test_security.h"
+#include "./monitoring/test_ram.h"
 
 int main()
 {
@@ -17,6 +18,7 @@ int main()
     failed += test_config();
     failed += test_utils();
     failed += test_security();
+    failed += test_mon_ram();
 
     if (failed == 0) {
         lprintf(LOG_INFO, "All unit tests passed\n");

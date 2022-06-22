@@ -77,6 +77,11 @@ void start_fantom(char *config_file)
 
 int main (int argc, char **argv)
 {
+    if (clearenv() != 0) {
+        lprintf(LOG_ERROR, "Cannot clear environemnt variables");
+        return 1;
+    }
+
     // Parse CLI args
     int err = 0;
     char *config_file = CONFIG_FILE_NAME;
