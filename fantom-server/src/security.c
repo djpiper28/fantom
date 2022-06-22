@@ -324,7 +324,7 @@ char *hash_password(char *password, char *salt)
 static char *get_issuer()
 {
     // Get hostname
-    char hostname_buffer[256];
+    char hostname_buffer[512];
     int r = gethostname(hostname_buffer, sizeof(hostname_buffer));
     if (r == -1) {
         lprintf(LOG_ERROR, "Cannot get hostname\n");
@@ -339,7 +339,7 @@ static char *get_issuer()
         return NULL;
     }
 
-    snprintf(ret, len, "%s-%d", hostname_buffer, getpid());
+    snprintf(ret, len, "f@ntom-%s-%d-", hostname_buffer, getpid());
 
     return ret;
 }

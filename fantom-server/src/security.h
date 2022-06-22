@@ -15,7 +15,7 @@
 #define NONCE_POLL_TIME_MS 10
 #define NONCE_MAP_GRAVE_MARKER 1
 
-#define FANTOM_AUD "F@ntom"
+#define FANTOM_AUD "f@ntom" VERSION
 #define FANTOM_TIME_TOLERANCE 10
 
 typedef struct fantom_claims_t {
