@@ -38,7 +38,7 @@ static void cb(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
 
         // Check for chrome preflights
         if (strncmp(hm->method.ptr, PREFLIGHT_METHOD, min(hm->method.len, sizeof(PREFLIGHT_METHOD) / sizeof(char)))) {
-          mg_http_reply(c, 400, PREFLIGHT_HEADERS, "yes googel cro-emeum u can do this bruv");
+            mg_http_reply(c, 400, PREFLIGHT_HEADERS, "yes googel cro-emeum u can do this bruv");
         }
 
         // Route the requests

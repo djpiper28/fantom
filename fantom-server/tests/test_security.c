@@ -248,7 +248,7 @@ int test_security()
         {&test_nonce_duplication, "test_nonce_duplication"},
         {&test_use_nonce, "test_use_nonce"},
         {&test_encode_jwt, "test_encode_jwt"},
-				{&test_decode_jwt, "test_decode_jwt"}
+        {&test_decode_jwt, "test_decode_jwt"}
     };
 
     return run_tests(tests, TESTS_SIZE(tests), "security.c");
