@@ -202,7 +202,7 @@ static int test_use_nonce()
 
 }
 
-int test_encode_jwt()
+static int test_encode_jwt()
 {
     fantom_config_t config;
     config.jwt_expire = 60 * 60 * 24 * 7;
@@ -218,7 +218,7 @@ int test_encode_jwt()
     return 1;
 }
 
-int test_decode_jwt()
+static int test_decode_jwt()
 {
     fantom_config_t config;
     config.jwt_expire = 60 * 60 * 24 * 7;
@@ -236,6 +236,34 @@ int test_decode_jwt()
     return 1;
 }
 
+static int test_decode_invalid_jwt()
+{
+    fantom_config_t config;
+    config.jwt_expire = 60 * 60 * 24 * 7;
+
+    ASSERT(use_token("bad jwt", "asdf", &config) == FANTOM_FAIL);
+
+    return 1;
+}
+
+static int test_decode_bad_jwt()
+{
+    fantom_config_t config;
+    config.jwt_expire = 60 * 60 * 24 * 7;
+
+    int uid = 180;
+    char *name = "fantom user #69";
+    char *jwt_secret = "ReAlLy_ SEcUrE JWt - SEcret";
+    char *ret = issue_token(uid, name, "secret 2", &config);
+    ASSERT(ret != NULL);
+    ASSERT(strlen(ret) != 0);
+
+    ASSERT(use_token(ret, jwt_secret, &config) == FANTOM_FAIL);
+    free(ret);
+
+    return 1;
+}
+
 int test_security()
 {
     unit_test tests[] = {
@@ -248,7 +276,9 @@ int test_security()
         {&test_nonce_duplication, "test_nonce_duplication"},
         {&test_use_nonce, "test_use_nonce"},
         {&test_encode_jwt, "test_encode_jwt"},
-        {&test_decode_jwt, "test_decode_jwt"}
+        {&test_decode_jwt, "test_decode_jwt"},
+        {&test_decode_invalid_jwt, "test_decode_invalid_jwt"},
+        {&test_decode_bad_jwt, "test_decode_bad_jwt"}
     };
 
     return run_tests(tests, TESTS_SIZE(tests), "security.c");
