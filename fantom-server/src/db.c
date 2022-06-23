@@ -226,6 +226,7 @@ static int db_get_users_callback(void *ret_in, int argc, char **argv, char ** co
         switch (i) {
         case 0:
             ret->uid = atoi(argv[i]);
+            free(tmp);
             break;
         case 1:
             if (tmp == NULL) {
