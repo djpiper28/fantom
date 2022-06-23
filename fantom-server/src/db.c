@@ -98,12 +98,16 @@ static int is_default_password(char *password, char *salt)
 
 static int db_get_user_callback(void *ret_in, int argc, char **argv, char ** col_names)
 {
-    fantom_user_t *ret = (fantom_user_t *) ret_in;
+    if (argc == 0) {
+        lprintf(LOG_ERROR, "No cols in row\n");
+        return 0;
+    }
 
+    fantom_user_t *ret = (fantom_user_t *) ret_in;
     char *salt = NULL;
     char *password = NULL;
-    int i = 0;
-    for (; i < argc; i++) {
+
+    for (int i = 0; i < argc; i++) {
         char *tmp = malloc(strlen(argv[i]) + 1);
         switch (i) {
         case 0:
@@ -152,11 +156,6 @@ static int db_get_user_callback(void *ret_in, int argc, char **argv, char ** col
 
     free(salt);
     free(password);
-
-    if (i == 0) {
-        lprintf(LOG_ERROR, "No cols in row\n");
-        return 0;
-    }
 
     ret->uid = 0;
     return 0;
