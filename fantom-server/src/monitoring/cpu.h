@@ -2,7 +2,7 @@
 #include "../fantom_utils.h"
 
 typedef struct fantom_cpu_record_t {
-    long val;
+    double val;
     int cores;
     long time;
 } fantom_cpu_record_t;
