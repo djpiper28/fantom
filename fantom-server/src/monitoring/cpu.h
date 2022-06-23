@@ -2,7 +2,7 @@
 #include "../fantom_utils.h"
 
 typedef struct fantom_cpu_record_t {
-    double val;
+    double val; // sum of CPU usage for each processor
     int cores;
     long time;
 } fantom_cpu_record_t;

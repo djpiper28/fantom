@@ -108,8 +108,7 @@ set(LIBS
     mbedx509 # ^
     jansson # json
     sqlite3 # database
-    m
-)
+    m)
 
 # Build JWT library
 add_subdirectory(lib/l8w8jwt/)
