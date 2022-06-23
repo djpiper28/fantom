@@ -32,6 +32,7 @@ application starts.
 | Requirement | Usage |
 |---|---|
 | `cmake` | Build system |
+| `ctest` | Cmake testing thing |
 | `gcc & g++` | Compilers |
 | `valgrind` | Memory analysis |
 | `python3` | Scripting |
