@@ -14,7 +14,7 @@ static int test_cpu_read_info()
     ASSERT(((double) inf.cores * 100) - inf.val >= -0.001);
     ASSERT(inf.time > 0);
 
-    lprintf(LOG_INFO, "Load average: %f %%\n", inf.val / ((double) inf.cores * 100));
+    lprintf(LOG_INFO, "Load average: %f %%\n", inf.val / (double) inf.cores);
 
     return 1;
 }
