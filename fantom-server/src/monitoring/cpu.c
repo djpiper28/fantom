@@ -5,26 +5,24 @@
 #include <sys/sysinfo.h>
 #include "./cpu.h"
 
-#define LOAD_AVG "/proc/stat"
+#define PROC_STAT "/proc/stat"
 
 static double read_next_number(char *buffer, int *i)
 {
     long ret = 0;
-    for (; buffer[*i] != ' ' && buffer[*i] != '\n' && buffer[*i] > 0; *i += 1) {
-        if (buffer[*i] >= '0' && buffer[*i] <= '9') {
-            ret *= 10;
-            ret += buffer[*i];
-        }
+    for (; buffer[*i] >= '0' && buffer[*i] <= '9' ; *i += 1) {
+        ret *= 10;
+        ret += buffer[*i] - '0';
     }
+    for(; buffer[*i] < '0' || buffer[*i] > '9'; *i += 1);
 
     return (double) ret;
 }
 
 static double get_load(char *buffer)
 {
-    // cpu4 127576 69224 82851 1411192 484 0 712 0 0 0
     int i = 0;
-    for(; buffer[i] != ' '; i++);
+    for(; buffer[i] < '0' || buffer[i] > '9'; i++);
 
     long user = read_next_number(buffer, &i),
          nice = read_next_number(buffer, &i),
@@ -39,7 +37,7 @@ static double get_load(char *buffer)
 
 fantom_status_t read_cpu_info(fantom_cpu_record_t *ret)
 {
-    FILE *f = fopen(LOAD_AVG, "r");
+    FILE *f = fopen(PROC_STAT, "r");
     if (f == NULL) {
         return FANTOM_FAIL;
     }
@@ -51,6 +49,10 @@ fantom_status_t read_cpu_info(fantom_cpu_record_t *ret)
     for (int i = 0; i < ret->cores; i++) {
         char buffer[256];
         char *r = fgets(buffer, sizeof(buffer), f);
+        if (r == NULL) {
+          break;
+        }
+
         ret->val += get_load(buffer);
     }
 
