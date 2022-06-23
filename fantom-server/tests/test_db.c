@@ -54,12 +54,40 @@ static int test_get_admin_user()
     return 1;
 }
 
+static int test_get_all_users()
+{
+    fantom_db_t db;
+    ASSERT(access(TEST_DB, F_OK) == 0);
+    ASSERT(init_db(&db, TEST_DB) == FANTOM_SUCCESS);
+
+    fantom_users_t ret;
+    fantom_status_t s = db_get_all_users(&db, &ret);
+
+    ASSERT(s == FANTOM_SUCCESS);
+    ASSERT(ret.length == 1);
+    ASSERT(ret.users != NULL);
+
+    fantom_user_t u = ret.users[0];
+
+    ASSERT(u.uid == 1);
+    ASSERT(u.name != NULL);
+    ASSERT(strcmp(u.name, "admin") == 0);
+    ASSERT(u.status == FANTOM_USER_PASSWORD_NEEDS_CHANGE);
+
+    free(u.name);
+    free(ret.users);
+    free_db(&db);
+
+    return 1;
+}
+
 int test_db()
 {
     unit_test tests[] = {
         {&test_default_pass, "test_default_pass"},
         {&test_init_free, "test_init_free"},
-        {&test_get_admin_user, "test_get_user_for_admin"}
+        {&test_get_admin_user, "test_get_user_for_admin"},
+        {&test_get_all_users, "test_get_all_users"}
     };
 
     return run_tests(tests, TESTS_SIZE(tests), "db.c");

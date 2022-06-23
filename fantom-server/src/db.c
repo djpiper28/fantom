@@ -188,3 +188,112 @@ fantom_status_t db_get_user(fantom_db_t *fdb, int uid, fantom_user_t *ret)
     return FANTOM_SUCCESS;
 }
 
+static int db_get_users_callback(void *ret_in, int argc, char **argv, char ** col_names)
+{
+    if (argc == 0) {
+        lprintf(LOG_ERROR, "No cols in row\n");
+        return 0;
+    }
+
+    fantom_users_t *ret_arr = (fantom_users_t *) ret_in;
+    if (ret_arr->users == NULL) {
+        if (ret_arr->length == 0) {
+            ret_arr->users = malloc(sizeof * ret_arr->users);
+            if (ret_arr->users == NULL) {
+                lprintf(LOG_ERROR, "Malloc error\n");
+                return 1;
+            }
+        } else {
+            lprintf(LOG_ERROR, "Null array\n");
+            return 1;
+        }
+    } else {
+        ret_arr->users = realloc(ret_arr->users, ret_arr->length + sizeof(*ret_arr->users));
+        if (ret_arr->users == NULL) {
+            lprintf(LOG_ERROR, "Realloc error\n");
+            return 1;
+        }
+    }
+
+    ret_arr->length++;
+    fantom_user_t *ret = &ret_arr->users[ret_arr->length - 1];
+
+    char *salt = NULL;
+    char *password = NULL;
+
+    for (int i = 0; i < argc; i++) {
+        char *tmp = malloc(strlen(argv[i]) + 1);
+        switch (i) {
+        case 0:
+            ret->uid = atoi(argv[i]);
+            break;
+        case 1:
+            if (tmp == NULL) {
+                lprintf(LOG_ERROR, "Malloc error\n");
+                return 0;
+            }
+
+            strcpy(tmp, argv[i]);
+            ret->name = tmp;
+            break;
+        case 2:
+            if (tmp == NULL) {
+                lprintf(LOG_ERROR, "Malloc error\n");
+                free(ret->name);
+                ret->name = NULL;
+                return 0;
+            }
+
+            strcpy(tmp, argv[i]);
+            salt = tmp;
+            break;
+        case 3:
+            if (tmp == NULL) {
+                lprintf(LOG_ERROR, "Malloc error\n");
+                free(ret->name);
+                free(salt);
+                ret->name = NULL;
+                salt = NULL;
+                return 0;
+            }
+
+            strcpy(tmp, argv[i]);
+            password = tmp;
+            break;
+        }
+    }
+
+    if (is_default_password(password, salt)) {
+        ret->status = FANTOM_USER_PASSWORD_NEEDS_CHANGE;
+    } else if (strcmp(salt, "") == 0 || strcmp(password, "") == 0) {
+        ret->status = FANTOM_USER_ACCOUNT_LOCKED;
+    } else {
+        ret->status = FANTOM_USER_VALID;
+    }
+
+    free(salt);
+    free(password);
+    return 0;
+}
+
+fantom_status_t db_get_all_users(fantom_db_t *fdb, fantom_users_t *ret)
+{
+    ret->users = NULL;
+    ret->length = 0;
+
+    char *err = NULL;
+    int rc = sqlite3_exec(fdb->db,
+                          "select uid, name, salt, password from users;",
+                          &db_get_users_callback,
+                          (void *) ret,
+                          &err);
+    if (rc != SQLITE_OK) {
+        lprintf(LOG_ERROR, "Cannot get users %s\n", err);
+
+        sqlite3_free(err);
+        return FANTOM_FAIL;
+    }
+
+    return FANTOM_SUCCESS;
+}
+
