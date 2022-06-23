@@ -14,7 +14,7 @@ static int test_ram_read_info()
 
     ASSERT(inf.swap_total > 0);
     ASSERT(inf.swap_free > 0);
-    ASSERT(inf.swap_total > inf.swap_free);
+    ASSERT(inf.swap_total >= inf.swap_free);
 
     ASSERT(inf.time > 0);
 
