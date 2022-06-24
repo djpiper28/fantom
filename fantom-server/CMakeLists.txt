@@ -97,6 +97,7 @@ set(SRC_FILES
     src/mongoose.c
     src/utils.c
     src/enp/get_nonce.c
+    src/enp/login.c
     src/monitoring/ram.c
     src/monitoring/cpu.c)
 
@@ -139,6 +140,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "TEST")
       tests/test_config.c
       tests/test_utils.c
       tests/test_security.c
+      tests/test_server.c
       tests/monitoring/test_ram.c
       tests/monitoring/test_cpu.c)
   add_executable(fantom-tests ${TEST_FILES})

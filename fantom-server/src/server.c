@@ -20,6 +20,46 @@ static void signal_handler(int signo)
     lprintf(LOG_WARNING, "SIG %d received, terminating...\n", signo);
 }
 
+fantom_status_t check_nonce(struct mg_connection *c, fantom_server_t s, struct mg_http_message *hm)
+{
+    struct mg_str *str = mg_http_get_header(hm, "Nonce");
+    if (str == NULL) {
+        return FANTOM_FAIL;
+    } else {
+        char *buffer = malloc(str->len + 1);
+        if (buffer == NULL) {
+            lprintf(LOG_ERROR, "Malloc error\n");
+            return FANTOM_FAIL;
+        }
+
+        strncpy(buffer, str->ptr, str->len + 1);
+        unsigned int val = (unsigned int) atol(buffer);
+        free(buffer);
+
+        fantom_status_t ret = use_nonce(s.nonce_mgr, val);
+        return ret;
+    }
+}
+
+static void protected_route(struct mg_connection *c,
+                            fantom_server_t s,
+                            struct mg_http_message *hm,
+                            void (*fn)(struct mg_connection *, fantom_server_t, struct mg_http_message *))
+{
+    fantom_status_t r = check_nonce(c, s, hm);
+    if (r == FANTOM_SUCCESS) {
+        fn(c, s, hm);
+    } else {
+        char *msg = get_error_msg("400 - Invalid nonce");
+        if (msg == NULL) {
+            mg_http_reply(c, 400, NULL, "err");
+        } else {
+            mg_http_reply(c, 400, NULL, msg);
+            free(msg);
+        }
+    }
+}
+
 static void cb(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
 {
     if (ev == MG_EV_HTTP_MSG) {
@@ -34,7 +74,7 @@ static void cb(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
         char ip_addr[sizeof("255.255.255.255")];
         mg_ntoa(&c->rem, ip_addr, sizeof(ip_addr));
 
-        lprintf(LOG_INFO, "%s%s\n", ip_addr, uri);
+        lprintf(LOG_INFO, "Access request %s%s\n", ip_addr, uri);
 
         // Check for chrome preflights
         if (strncmp(hm->method.ptr, PREFLIGHT_METHOD, min(hm->method.len, sizeof(PREFLIGHT_METHOD) / sizeof(char)))) {
@@ -45,7 +85,14 @@ static void cb(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
         else if (mg_http_match_uri(hm, "/api/get_nonce")) {
             get_nonce_enp(c, s);
         } else {
-            mg_http_reply(c, 404, NULL, "404 - Page not found");
+            // Protected routes
+            char *msg = get_error_msg("404 - Page not found");
+            if (msg == NULL) {
+                mg_http_reply(c, 400, NULL, "err");
+            } else {
+                mg_http_reply(c, 400, NULL, msg);
+                free(msg);
+            }
         }
     }
 }

@@ -49,12 +49,21 @@ static int test_big_read()
     return 1;
 }
 
+static int test_get_error_msg()
+{
+    char * msg = get_error_msg("test");
+    ASSERT(msg != NULL);
+    free(msg);
+    return 1;
+}
+
 int test_utils()
 {
     unit_test tests[] = {
         {&test_bad_read, "test_bad_read"},
         {&test_good_read, "test_good_read"},
-        {&test_big_read, "test_big_read"}
+        {&test_big_read, "test_big_read"},
+        {&test_get_error_msg, "test_get_error_msg"}
     };
 
     return run_tests(tests, TESTS_SIZE(tests), "utils.c");
