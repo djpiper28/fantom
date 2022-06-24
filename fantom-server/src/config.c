@@ -109,7 +109,7 @@ fantom_status_t fantom_init_config(FILE *input, fantom_config_t *output)
     }
 
     if (status) {
-        status = db_file != NULL && bind_url != NULL && max_log_age_days > 0 && jwt_expire > 0;
+        status = db_file != NULL && bind_url != NULL && jwt_secret != NULL && max_log_age_days > 0 && jwt_expire > 0;
     }
 
     if (db_file != NULL) {
@@ -120,6 +120,16 @@ fantom_status_t fantom_init_config(FILE *input, fantom_config_t *output)
         }
     } else {
         lprintf(LOG_ERROR, "db_file is not defined\n");
+    }
+
+    if (jwt_secret != NULL) {
+        if (status) {
+            output->jwt_secret = jwt_secret;
+        } else {
+            free(jwt_secret);
+        }
+    } else {
+        lprintf(LOG_ERROR, "jwt_secret is not defined\n");
     }
 
     if (bind_url != NULL) {

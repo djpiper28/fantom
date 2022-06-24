@@ -97,6 +97,7 @@ void login_enp(struct mg_connection *c, fantom_server_t s, struct mg_http_messag
     } else {
         fantom_login_details_t d;
         fantom_status_t status = try_login(s, name, password, &d);
+
         if (status == FANTOM_FAIL) {
             send_403_error(c);
         } else {
@@ -106,19 +107,17 @@ void login_enp(struct mg_connection *c, fantom_server_t s, struct mg_http_messag
             if (obj == NULL) {
                 lprintf(LOG_ERROR, "Cannot encode json\n");
                 send_500_error(c);
-                free_login_details(&d);
-                return;
-            }
-
-            char *msg = json_dumps(obj, JSON_ENCODE_ANY);
-            json_decref(obj);
-
-            if (msg == NULL) {
-                send_500_error(c);
             } else {
-                mg_http_reply(c, 200, NULL, msg);
+                char *msg = json_dumps(obj, JSON_ENCODE_ANY);
+                json_decref(obj);
 
-                free(msg);
+                if (msg == NULL) {
+                    send_500_error(c);
+                } else {
+                    mg_http_reply(c, 200, "", "%s", msg);
+
+                    free(msg);
+                }
             }
         }
 

@@ -18,6 +18,10 @@ typedef struct fantom_server_t {
     fantom_nonce_manager_t *nonce_mgr;
 } fantom_server_t;
 
+#ifdef TEST
+extern int server_running_override;
+#endif
+
 void start_fantom_server(fantom_config_t *config, fantom_db_t *db);
 void send_500_error(struct mg_connection *c);
 void send_403_error(struct mg_connection *c);

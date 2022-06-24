@@ -75,7 +75,11 @@ void start_fantom(char *config_file)
     return;
 }
 
+#ifndef TEST
 int main (int argc, char **argv)
+#else
+int fantom_main(int argc, char **argv)
+#endif
 {
     if (clearenv() != 0) {
         lprintf(LOG_ERROR, "Cannot clear environemnt variables");

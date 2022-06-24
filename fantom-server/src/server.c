@@ -10,9 +10,13 @@
 
 #define PREFLIGHT_METHOD "OPTIONS"
 #define HTTP_HEADER_END "\r\n"
-#define PREFLIGHT_HEADERS "Access-Control-Allow-Origin *" HTTP_HEADER_END\
-                          "Access-Control-Allow-Headers *" HTTP_HEADER_END
+#define PREFLIGHT_HEADERS "Access-Control-Allow-Origin: *" HTTP_HEADER_END \
+                          "Access-Control-Allow-Headers: *" HTTP_HEADER_END
 // \r\n for HTTP right????!?
+
+#ifdef TEST
+int server_running_override = 1;
+#endif
 
 static int running = 1;
 static void signal_handler(int signo)
@@ -46,9 +50,9 @@ void send_500_error(struct mg_connection *c)
 {
     char *msg = get_error_msg("500 - Internal server error");
     if (msg == NULL) {
-        mg_http_reply(c, 500, NULL, "err");
+        mg_http_reply(c, 500, "", "%S", "err");
     } else {
-        mg_http_reply(c, 500, NULL, msg);
+        mg_http_reply(c, 500, "", "%s", msg);
         free(msg);
     }
 }
@@ -57,9 +61,9 @@ void send_400_error(struct mg_connection *c)
 {
     char *msg = get_error_msg("400 - Bad input");
     if (msg == NULL) {
-        mg_http_reply(c, 400, NULL, "err");
+        mg_http_reply(c, 400, "", "%s", "err");
     } else {
-        mg_http_reply(c, 400, NULL, msg);
+        mg_http_reply(c, 400, "", "%s", msg);
         free(msg);
     }
 }
@@ -68,9 +72,9 @@ void send_403_error(struct mg_connection *c)
 {
     char *msg = get_error_msg("403 - Not authorised");
     if (msg == NULL) {
-        mg_http_reply(c, 403, NULL, "err");
+        mg_http_reply(c, 403, "", "%s", "err");
     } else {
-        mg_http_reply(c, 403, NULL, msg);
+        mg_http_reply(c, 403, "", "%s", msg);
         free(msg);
     }
 }
@@ -105,14 +109,14 @@ static void cb(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
         strncpy(uri, hm->uri.ptr, len);
         uri[len] = 0;
 
-        char ip_addr[sizeof("255.255.255.255")];
+        char ip_addr[max(sizeof("255.255.255.255"), sizeof("ff:ff:ff:ff:ff:ff"))];
         mg_ntoa(&c->rem, ip_addr, sizeof(ip_addr));
 
         lprintf(LOG_INFO, "Access request %s%s\n", ip_addr, uri);
 
         // Check for chrome preflights
-        if (strncmp(hm->method.ptr, PREFLIGHT_METHOD, min(hm->method.len, sizeof(PREFLIGHT_METHOD) / sizeof(char)))) {
-            mg_http_reply(c, 400, PREFLIGHT_HEADERS, "yes googel cro-emeum u can do this bruv");
+        if (strncmp(hm->method.ptr, PREFLIGHT_METHOD, min(hm->method.len, sizeof(PREFLIGHT_METHOD))) == 0) {
+            mg_http_reply(c, 200, PREFLIGHT_HEADERS, "y");
         }
 
         // Route the requests
@@ -121,13 +125,13 @@ static void cb(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
         } else {
             // Protected routes
             if (mg_http_match_uri(hm, "/api/login")) {
-                protected_route(c, s, hm, login_enp);
+                protected_route(c, s, hm, &login_enp);
             } else {
                 char *msg = get_error_msg("404 - Page not found");
                 if (msg == NULL) {
-                    mg_http_reply(c, 404, NULL, "err");
+                    mg_http_reply(c, 404, "", "err");
                 } else {
-                    mg_http_reply(c, 404, NULL, msg);
+                    mg_http_reply(c, 404, "", "%s", msg);
                     free(msg);
                 }
             }
@@ -156,8 +160,12 @@ void start_fantom_server(fantom_config_t *config, fantom_db_t *db)
         return;
     }
 
+#ifdef TEST
+    while(running && server_running_override) {
+#else
     while (running) {
-        mg_mgr_poll(&mgr, 1000);
+#endif
+        mg_mgr_poll(&mgr, 10);
     }
 
     lprintf(LOG_INFO, "Stopping server...\n");
