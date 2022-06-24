@@ -26,6 +26,7 @@ application starts.
 | `openssl` | crypto |
 | `pthread` | threading |
 | `sqlite3` | database |
+| `curl`    | system testing |
 
 ### Build Requirements
 
@@ -59,3 +60,7 @@ it goes anywhere.
 mkdir -p build
 cmake .. -DCMAKE_BUILD_TYPE=TEST && cmake --build . -j && ctest -V
 ```
+
+### Confirguration
+TODO!
+

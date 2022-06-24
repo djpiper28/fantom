@@ -53,6 +53,28 @@ void send_500_error(struct mg_connection *c)
     }
 }
 
+void send_400_error(struct mg_connection *c)
+{
+    char *msg = get_error_msg("400 - Bad input");
+    if (msg == NULL) {
+        mg_http_reply(c, 400, NULL, "err");
+    } else {
+        mg_http_reply(c, 400, NULL, msg);
+        free(msg);
+    }
+}
+
+void send_403_error(struct mg_connection *c)
+{
+    char *msg = get_error_msg("403 - Not authorised");
+    if (msg == NULL) {
+        mg_http_reply(c, 403, NULL, "err");
+    } else {
+        mg_http_reply(c, 403, NULL, msg);
+        free(msg);
+    }
+}
+
 static void protected_route(struct mg_connection *c,
                             fantom_server_t s,
                             struct mg_http_message *hm,

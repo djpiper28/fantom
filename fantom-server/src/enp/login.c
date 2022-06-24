@@ -1,11 +1,44 @@
 #include <stdlib.h>
 #include <string.h>
 #include <jansson.h>
-#include "get_nonce.h"
+#include "./login.h"
 #include "../security.h"
-#include "../db.h"
 #include "../logger.h"
 #include "../utils.h"
+
+void free_login_details(fantom_login_details_t *d)
+{
+    free_user(&d->user);
+    if (d->jwt != NULL) {
+        free(d->jwt);
+    }
+    d->jwt = NULL;
+}
+
+fantom_status_t try_login(fantom_server_t s, char *name, char *password, fantom_login_details_t *ret)
+{
+    fantom_user_t usr;
+    fantom_status_t r = db_login(s.db, name, password, &usr);
+
+    if (r == FANTOM_FAIL) {
+        return FANTOM_FAIL;
+    }
+
+    if (usr.status == FANTOM_USER_ACCOUNT_LOCKED) {
+        free_user(&usr);
+        return FANTOM_FAIL;
+    }
+
+    char *jwt = issue_token(usr.uid, usr.name, s.conf->jwt_secret, s.conf);
+    if (jwt == NULL) {
+        free_user(&usr);
+        return FANTOM_FAIL;
+    }
+
+    ret->user = usr;
+    ret->jwt = jwt;
+    return FANTOM_SUCCESS;
+}
 
 void login_enp(struct mg_connection *c, fantom_server_t s, struct mg_http_message *hm)
 {
@@ -28,15 +61,7 @@ void login_enp(struct mg_connection *c, fantom_server_t s, struct mg_http_messag
 
     // Json to internal structs
     if (!root) {
-        char *err = get_error_msg("400 - \"name\" is not in the json object");
-
-        if (err == NULL) {
-            lprintf(LOG_ERROR, "Malloc error\n");
-            send_500_error(c);
-            return;
-        }
-        mg_http_reply(c, 400, NULL, err);
-        free(err);
+        send_400_error(c);
         return;
     } else if (!json_is_object(root)) {
         json_decref(root);
@@ -65,55 +90,23 @@ void login_enp(struct mg_connection *c, fantom_server_t s, struct mg_http_messag
         json_decref(root);
     }
 
-    int status = name != NULL || password != NULL;
+    int status = name != NULL && password != NULL;
 
     if (!status) {
-        char *err = NULL;
-        if (name == NULL) {
-            err = get_error_msg("400 - \"name\" is not in the json object");
-        } else if (password == NULL) {
-            err = get_error_msg("400 - \"password\" is not in the json object");
-        }
-
-        if (err == NULL) {
-            lprintf(LOG_ERROR, "Malloc error\n");
-            send_500_error(c);
-        } else {
-            mg_http_reply(c, 400, NULL, err);
-            free(err);
-        }
+        send_400_error(c);
     } else {
-        fantom_user_t ret;
-        fantom_status_t r = db_login(s.db, name, password, &ret);
-
-        if (r == FANTOM_FAIL || ret.status == FANTOM_USER_ACCOUNT_LOCKED) {
-            char *err = get_error_msg("403 - Cannot login");
-
-            if (err == NULL) {
-                lprintf(LOG_ERROR, "Malloc error\n");
-                send_500_error(c);
-                return;
-            }
-            mg_http_reply(c, 403, NULL, err);
-            free(err);
-            free_user(&ret);
-            return;
-        }
-
-        char *jwt = issue_token(ret.uid, ret.name, s.conf->jwt_secret, s.conf);
-        if (jwt == NULL) {
-            lprintf(LOG_ERROR, "Malloc error\n");
-            send_500_error(c);
-            free_user(&ret);
-            return;
+        fantom_login_details_t d;
+        fantom_status_t status = try_login(s, name, password, &d);
+        if (status == FANTOM_FAIL) {
+            send_403_error(c);
         } else {
-            json_t *obj = json_pack("{s:s;s:d}",
-                                    "jwt", jwt,
-                                    "status", ret.status);
+            json_t *obj = json_pack("{sssi}",
+                                    "jwt", d.jwt,
+                                    "status", d.user.status);
             if (obj == NULL) {
                 lprintf(LOG_ERROR, "Cannot encode json\n");
                 send_500_error(c);
-                free_user(&ret);
+                free_login_details(&d);
                 return;
             }
 
@@ -127,10 +120,9 @@ void login_enp(struct mg_connection *c, fantom_server_t s, struct mg_http_messag
 
                 free(msg);
             }
-            free(jwt);
         }
 
-        free_user(&ret);
+        free_login_details(&d);
     }
 }
 

@@ -109,6 +109,7 @@ set(LIBS
     mbedx509 # ^
     jansson # json
     sqlite3 # database
+    curl
     m)
 
 # Build JWT library

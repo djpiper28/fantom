@@ -62,7 +62,7 @@ char *read_file(FILE *input)
 
 char *get_error_msg(char *msg)
 {
-    json_t *obj = json_pack("{s:s}", "error", msg);
+    json_t *obj = json_pack("{ss}", "error", msg);
     if (obj == NULL) {
         lprintf(LOG_ERROR, "Cannot encode error\n");
         return NULL;
