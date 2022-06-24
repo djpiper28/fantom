@@ -4,7 +4,7 @@
 
 #define MEM_INFO "/proc/meminfo"
 #define LINE_MEM_TOTAL 0
-#define LINE_MEM_FREE 1
+#define LINE_MEM_FREE 2
 #define LINE_SWAP_TOTAL 14
 #define LINE_SWAP_FREE 15
 
