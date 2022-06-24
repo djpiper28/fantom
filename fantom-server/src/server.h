@@ -19,5 +19,6 @@ typedef struct fantom_server_t {
 } fantom_server_t;
 
 void start_fantom_server(fantom_config_t *config, fantom_db_t *db);
+void send_500_error(struct mg_connection *c);
 fantom_status_t check_nonce(struct mg_connection *c, fantom_server_t s, struct mg_http_message *hm);
 

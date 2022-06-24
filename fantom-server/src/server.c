@@ -6,6 +6,7 @@
 #include "security.h"
 #include "utils.h"
 #include "enp/get_nonce.h"
+#include "enp/login.h"
 
 #define PREFLIGHT_METHOD "OPTIONS"
 #define HTTP_HEADER_END "\r\n"
@@ -38,6 +39,17 @@ fantom_status_t check_nonce(struct mg_connection *c, fantom_server_t s, struct m
 
         fantom_status_t ret = use_nonce(s.nonce_mgr, val);
         return ret;
+    }
+}
+
+void send_500_error(struct mg_connection *c)
+{
+    char *msg = get_error_msg("500 - Internal server error");
+    if (msg == NULL) {
+        mg_http_reply(c, 500, NULL, "err");
+    } else {
+        mg_http_reply(c, 500, NULL, msg);
+        free(msg);
     }
 }
 
@@ -86,12 +98,16 @@ static void cb(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
             get_nonce_enp(c, s);
         } else {
             // Protected routes
-            char *msg = get_error_msg("404 - Page not found");
-            if (msg == NULL) {
-                mg_http_reply(c, 400, NULL, "err");
+            if (mg_http_match_uri(hm, "/api/login")) {
+                protected_route(c, s, hm, login_enp);
             } else {
-                mg_http_reply(c, 400, NULL, msg);
-                free(msg);
+                char *msg = get_error_msg("404 - Page not found");
+                if (msg == NULL) {
+                    mg_http_reply(c, 404, NULL, "err");
+                } else {
+                    mg_http_reply(c, 404, NULL, msg);
+                    free(msg);
+                }
             }
         }
     }
