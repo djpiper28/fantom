@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <jansson.h>
 #include "utils.h"
 #include "logger.h"
 
@@ -57,5 +58,19 @@ char *read_file(FILE *input)
     }
 
     return ptr;
+}
+
+char *get_error_msg(char *msg)
+{
+    json_t *obj = json_pack("{ss}", "error", msg);
+    if (obj == NULL) {
+        lprintf(LOG_ERROR, "Cannot encode error\n");
+        return NULL;
+    }
+
+    char *ret = json_dumps(obj, JSON_ENCODE_ANY);
+    json_decref(obj);
+
+    return ret;
 }
 

@@ -45,10 +45,10 @@ static int test_get_admin_user()
     ASSERT(s == FANTOM_SUCCESS);
     ASSERT(ret.uid == 1);
     ASSERT(ret.name != NULL);
-    ASSERT(strcmp(ret.name, "admin") == 0);
+    ASSERT(strcmp(ret.name, DEFAULT_USER) == 0);
     ASSERT(ret.status == FANTOM_USER_PASSWORD_NEEDS_CHANGE);
 
-    free(ret.name);
+    free_user(&ret);
     free_db(&db);
 
     return 1;
@@ -71,11 +71,66 @@ static int test_get_all_users()
 
     ASSERT(u.uid == 1);
     ASSERT(u.name != NULL);
-    ASSERT(strcmp(u.name, "admin") == 0);
+    ASSERT(strcmp(u.name, DEFAULT_USER) == 0);
     ASSERT(u.status == FANTOM_USER_PASSWORD_NEEDS_CHANGE);
 
-    free(u.name);
-    free(ret.users);
+    free_user(&u);
+    free_users(&ret);
+    free_db(&db);
+
+    return 1;
+}
+
+static int test_login_admin()
+{
+    fantom_db_t db;
+    ASSERT(access(TEST_DB, F_OK) == 0);
+    ASSERT(init_db(&db, TEST_DB) == FANTOM_SUCCESS);
+
+    fantom_user_t ret;
+    fantom_status_t s = db_login(&db, DEFAULT_USER, DEFAULT_PASSWORD, &ret);
+
+    ASSERT(s == FANTOM_SUCCESS);
+    ASSERT(ret.uid == 1);
+    ASSERT(ret.name != NULL);
+    ASSERT(strcmp(ret.name, DEFAULT_USER) == 0);
+    ASSERT(ret.status == FANTOM_USER_PASSWORD_NEEDS_CHANGE);
+
+    free_user(&ret);
+    free_db(&db);
+
+    return 1;
+}
+
+static int test_login_admin_bad_password()
+{
+    fantom_db_t db;
+    ASSERT(access(TEST_DB, F_OK) == 0);
+    ASSERT(init_db(&db, TEST_DB) == FANTOM_SUCCESS);
+
+    fantom_user_t ret;
+    fantom_status_t s = db_login(&db, DEFAULT_USER, DEFAULT_PASSWORD DEFAULT_PASSWORD, &ret);
+
+    ASSERT(s == FANTOM_FAIL);
+    ASSERT(ret.uid == -1);
+    ASSERT(ret.name == NULL);
+    free_db(&db);
+
+    return 1;
+}
+
+static int test_login_bad_user()
+{
+    fantom_db_t db;
+    ASSERT(access(TEST_DB, F_OK) == 0);
+    ASSERT(init_db(&db, TEST_DB) == FANTOM_SUCCESS);
+
+    fantom_user_t ret;
+    fantom_status_t s = db_login(&db, "jimmy", "asdfgh", &ret);
+
+    ASSERT(s == FANTOM_FAIL);
+    ASSERT(ret.uid == -1);
+    ASSERT(ret.name == NULL);
     free_db(&db);
 
     return 1;
@@ -87,7 +142,10 @@ int test_db()
         {&test_default_pass, "test_default_pass"},
         {&test_init_free, "test_init_free"},
         {&test_get_admin_user, "test_get_user_for_admin"},
-        {&test_get_all_users, "test_get_all_users"}
+        {&test_get_all_users, "test_get_all_users"},
+        {&test_login_admin, "test_login_admin"},
+        {&test_login_admin_bad_password, "test_login_admin_bad_password"},
+        {&test_login_bad_user, "test_login_bad_user"}
     };
 
     return run_tests(tests, TESTS_SIZE(tests), "db.c");

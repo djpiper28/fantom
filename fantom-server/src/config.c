@@ -30,6 +30,7 @@ fantom_status_t fantom_init_config(FILE *input, fantom_config_t *output)
 
     char *db_file = NULL;
     char *bind_url = NULL;
+    char *jwt_secret = NULL;
     int max_log_age_days = -1;
     int jwt_expire = -1;
     char *ptr = read_file(input);
@@ -72,10 +73,21 @@ fantom_status_t fantom_init_config(FILE *input, fantom_config_t *output)
                 const char * t = json_string_value(jtmp);
                 size_t len = strlen(t);
 
-                bind_url = malloc(sizeof * db_file * (len + 1));
+                bind_url = malloc(sizeof * bind_url * (len + 1));
                 strcpy(bind_url, t);
             } else {
                 lprintf(LOG_ERROR, "bind_url is not a number in the config file\n");
+            }
+
+            jtmp = json_object_get(root, "jwt_secret");
+            if (json_is_string(jtmp)) {
+                const char * t = json_string_value(jtmp);
+                size_t len = strlen(t);
+
+                jwt_secret = malloc(sizeof * jwt_secret * (len + 1));
+                strcpy(jwt_secret, t);
+            } else {
+                lprintf(LOG_ERROR, "jwt_secret is not a number in the config file\n");
             }
 
             jtmp = json_object_get(root, "max_log_age_days");
@@ -97,7 +109,7 @@ fantom_status_t fantom_init_config(FILE *input, fantom_config_t *output)
     }
 
     if (status) {
-        status = db_file != NULL && bind_url != NULL && max_log_age_days > 0 && jwt_expire > 0;
+        status = db_file != NULL && bind_url != NULL && jwt_secret != NULL && max_log_age_days > 0 && jwt_expire > 0;
     }
 
     if (db_file != NULL) {
@@ -108,6 +120,16 @@ fantom_status_t fantom_init_config(FILE *input, fantom_config_t *output)
         }
     } else {
         lprintf(LOG_ERROR, "db_file is not defined\n");
+    }
+
+    if (jwt_secret != NULL) {
+        if (status) {
+            output->jwt_secret = jwt_secret;
+        } else {
+            free(jwt_secret);
+        }
+    } else {
+        lprintf(LOG_ERROR, "jwt_secret is not defined\n");
     }
 
     if (bind_url != NULL) {
@@ -146,6 +168,11 @@ void fantom_free_config(fantom_config_t *config)
     if (config->bind_url != NULL) {
         free(config->bind_url);
         config->bind_url = NULL;
+    }
+
+    if (config->jwt_secret != NULL) {
+        free(config->jwt_secret);
+        config->jwt_secret = NULL;
     }
 }
 

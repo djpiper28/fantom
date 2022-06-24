@@ -59,6 +59,7 @@ add_definitions(-DMG_ENABLE_FS=1)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake)
 
 if(CMAKE_BUILD_TYPE STREQUAL "TEST")
+  add_definitions(-DTEST=1)
   include(CodeCoverage)
 
   # Setup coverage (using gcovr so needs gcc/g++) set(CMAKE_C_COMPILER
@@ -85,8 +86,8 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 endif()
 
 # src
-set(MAIN_FILE src/main.c)
 set(SRC_FILES
+    src/main.c
     src/banner.c
     src/config.c
     src/fantom_str.c
@@ -97,6 +98,7 @@ set(SRC_FILES
     src/mongoose.c
     src/utils.c
     src/enp/get_nonce.c
+    src/enp/login.c
     src/monitoring/ram.c
     src/monitoring/cpu.c)
 
@@ -108,18 +110,11 @@ set(LIBS
     mbedx509 # ^
     jansson # json
     sqlite3 # database
+    curl
     m)
 
 # Build JWT library
 add_subdirectory(lib/l8w8jwt/)
-
-# Build fantom
-add_executable(fantom ${SRC_FILES} ${MAIN_FILE})
-target_link_libraries(
-  fantom
-  PUBLIC ${LIBS}
-  PRIVATE l8w8jwt)
-target_include_directories(fantom PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 # Copy test scripts
 file(COPY mem_tests.sh DESTINATION ${CMAKE_BINARY_DIR})
@@ -139,6 +134,9 @@ if(CMAKE_BUILD_TYPE STREQUAL "TEST")
       tests/test_config.c
       tests/test_utils.c
       tests/test_security.c
+      tests/test_server.c
+      tests/sys_tests.c
+      tests/curl_utils.c
       tests/monitoring/test_ram.c
       tests/monitoring/test_cpu.c)
   add_executable(fantom-tests ${TEST_FILES})
@@ -154,4 +152,12 @@ if(CMAKE_BUILD_TYPE STREQUAL "TEST")
   add_test(NAME memory-tests COMMAND bash mem_tests.sh)
 
   message(STATUS "TEST build setup")
+else()
+  # Build fantom
+  add_executable(fantom ${SRC_FILES})
+  target_link_libraries(
+    fantom
+    PUBLIC ${LIBS}
+    PRIVATE l8w8jwt)
+  target_include_directories(fantom PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 endif()
