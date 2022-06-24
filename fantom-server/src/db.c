@@ -1,8 +1,9 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include "db.h"
-#include "logger.h"
+#include "./security.h"
+#include "./db.h"
+#include "./logger.h"
 
 char *DB_CREATE_TABLES =
     "create table users ("
@@ -37,7 +38,7 @@ char *DB_CREATE_TABLES =
     "  check ((favourite or hidden) and not (favourite and hidden))"
     ");"
     "insert into users (uid, name, salt, password) "
-    "values (1, 'admin', "
+    "values (1, '"DEFAULT_USER"', "
     "'" DEFAULT_PASSWORD_SALT "', "
     "'" DEFAULT_PASSWORD_HASH "');"
     "insert into admins (uid) values (1);";
@@ -72,10 +73,11 @@ fantom_status_t init_db(fantom_db_t *fdb, char *db_file)
 
         lprintf(LOG_INFO, "A new database %s was made successfully\n", db_file);
         lprintf(LOG_WARNING, "A default user called '"
-                ANSI_YELLOW "admin" ANSI_RESET "' with password '"
+                ANSI_YELLOW DEFAULT_USER ANSI_RESET "' with password '"
                 ANSI_YELLOW DEFAULT_PASSWORD ANSI_RESET
                 "' was made, please login and "
-                ANSI_RED "change the password" ANSI_RESET "\n");
+                ANSI_RED "change the password" ANSI_RESET ".\n"
+                ANSI_RED "You cannot use the account until the password is changed.\n" ANSI_RESET);
     }
 
     // Copy to struct
@@ -90,6 +92,24 @@ void free_db(fantom_db_t *db)
 }
 
 // Model
+
+void free_user(fantom_user_t *user)
+{
+    if (user->name != NULL) {
+        free(user->name);
+    }
+    user->name = NULL;
+    user->uid = -1;
+}
+
+void free_users(fantom_users_t *users)
+{
+    if (users->users != NULL) {
+        free(users->users);
+    }
+    users->users = NULL;
+    users->length = 0;
+}
 
 static int is_default_password(char *password, char *salt)
 {
@@ -292,6 +312,121 @@ fantom_status_t db_get_all_users(fantom_db_t *fdb, fantom_users_t *ret)
         lprintf(LOG_ERROR, "Cannot get users %s\n", err);
 
         sqlite3_free(err);
+        return FANTOM_FAIL;
+    }
+
+    return FANTOM_SUCCESS;
+}
+
+typedef struct fantom_login_t {
+    fantom_user_t *ret;
+    char *password;
+} fantom_login_t;
+
+static int db_login_callback(void *ret_in, int argc, char **argv, char ** col_names)
+{
+    if (argc == 0) {
+        lprintf(LOG_ERROR, "No cols in row\n");
+        return 0;
+    }
+
+    fantom_login_t *l = (fantom_login_t *) ret_in;
+    fantom_user_t *ret = (fantom_user_t *) l->ret;
+
+    char *salt = NULL;
+    char *password = NULL;
+
+    for (int i = 0; i < argc; i++) {
+        char *tmp = malloc(strlen(argv[i]) + 1);
+        switch (i) {
+        case 0:
+            ret->uid = atoi(argv[i]);
+            free(tmp);
+            break;
+        case 1:
+            if (tmp == NULL) {
+                lprintf(LOG_ERROR, "Malloc error\n");
+                return 0;
+            }
+
+            strcpy(tmp, argv[i]);
+            ret->name = tmp;
+            break;
+        case 2:
+            if (tmp == NULL) {
+                lprintf(LOG_ERROR, "Malloc error\n");
+                free(ret->name);
+                ret->name = NULL;
+                return 0;
+            }
+
+            strcpy(tmp, argv[i]);
+            salt = tmp;
+            break;
+        case 3:
+            if (tmp == NULL) {
+                lprintf(LOG_ERROR, "Malloc error\n");
+                free(ret->name);
+                free(salt);
+                ret->name = NULL;
+                salt = NULL;
+                return 0;
+            }
+
+            strcpy(tmp, argv[i]);
+            password = tmp;
+            break;
+        }
+    }
+
+    // Check password
+    char *hpwd = hash_password(l->password, salt);
+    if (hpwd != NULL) {
+        if (strcmp(password, hpwd) != 0) {
+            free_user(ret);
+            lprintf(LOG_WARNING, "Invalid password\n");
+        } else {
+            if (is_default_password(password, salt)) {
+                ret->status = FANTOM_USER_PASSWORD_NEEDS_CHANGE;
+            } else if (strcmp(salt, "") == 0 || strcmp(password, "") == 0) {
+                ret->status = FANTOM_USER_ACCOUNT_LOCKED;
+            } else {
+                ret->status = FANTOM_USER_VALID;
+            }
+        }
+
+        free(hpwd);
+    } else {
+        lprintf(LOG_ERROR, "Malloc error\n");
+        free_user(ret);
+    }
+
+    free(salt);
+    free(password);
+    return 0;
+}
+
+fantom_status_t db_login(fantom_db_t *fdb, char *name, char *password, fantom_user_t *ret)
+{
+    ret->uid = -1;
+    fantom_login_t data = {ret, password};
+    char *err = NULL;
+    char sql[256];
+    snprintf(sql, sizeof(sql), "select uid, name, salt, password from users;");
+
+    int rc = sqlite3_exec(fdb->db, sql,
+                          &db_login_callback,
+                          (void *) &data,
+                          &err);
+    if (rc != SQLITE_OK) {
+        lprintf(LOG_ERROR, "Cannot get user (name %s) %s\n", name, err);
+
+        sqlite3_free(err);
+        return FANTOM_FAIL;
+    }
+
+    if (ret->uid == -1) {
+        lprintf(LOG_WARNING, "Cannot login user (name %s)\n", name);
         return FANTOM_FAIL;
     }
 
