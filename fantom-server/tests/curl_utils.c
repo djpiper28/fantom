@@ -84,10 +84,6 @@ char *send_request(char * url, char *data, char *request, unsigned int nonce)
 
         int getSuccess = res == CURLE_OK && response.ptr != NULL;
 
-        if (getSuccess) {
-            return response.ptr;
-        }
-
         curl_easy_cleanup(curl);
         curl_slist_free_all(list);
 
@@ -97,6 +93,10 @@ char *send_request(char * url, char *data, char *request, unsigned int nonce)
             } else {
                 lprintf(LOG_ERROR, "No response\n");
             }
+        }
+
+        if (getSuccess) {
+            return response.ptr;
         }
     } else {
         lprintf(LOG_ERROR, "Curl init failed\n");
@@ -137,10 +137,6 @@ char *get_request(char *url)
 
         int getSuccess = res == CURLE_OK && response.ptr != NULL;
 
-        if (getSuccess) {
-            return response.ptr;
-        }
-
         curl_easy_cleanup(curl);
         curl_slist_free_all(list);
 
@@ -150,6 +146,10 @@ char *get_request(char *url)
             } else {
                 lprintf(LOG_ERROR, "No response\n");
             }
+        }
+
+        if (getSuccess) {
+            return response.ptr;
         }
     } else {
         lprintf(LOG_ERROR, "Curl init failed\n");

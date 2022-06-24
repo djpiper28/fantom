@@ -4,7 +4,7 @@ import sys
 
 NO_LEAKS = "All heap blocks were freed -- no leaks are possible"
 TEST_EXEC_NAME = "fantom-tests"
-VALGRIND_OPTS = "--leak-check=full --show-leak-kinds=all --track-fds=yes"  # all" silly ubuntu has no all
+VALGRIND_OPTS = "--leak-check=full --show-leak-kinds=all --track-fds=yes --fair-sched=yes"  # all" silly ubuntu has no all
 
 
 def tests():
@@ -23,9 +23,11 @@ def tests():
     p.wait()
 
     output = ""
+    for line in p.stdout:
+        print(f">>{line.decode('UTF-8')}")
     for line in p.stderr:
-        output += line.decode("UTF-8")
-    print(f">>\n{output}<<")
+        print(f">>{line.decode('UTF-8')}")
+        output += line
 
     if NO_LEAKS in output and p.returncode == 0:
         return 0
