@@ -159,5 +159,10 @@ void fantom_free_config(fantom_config_t *config)
         free(config->bind_url);
         config->bind_url = NULL;
     }
+
+    if (config->jwt_secret != NULL) {
+        free(config->jwt_secret);
+        config->jwt_secret = NULL;
+    }
 }
 
