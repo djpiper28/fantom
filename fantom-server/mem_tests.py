@@ -25,7 +25,7 @@ def tests():
     output = ""
     for line in p.stderr:
         print(f">>{line.decode('UTF-8')}")
-        output += line
+        output += line.decode("UTF-8")
 
     if NO_LEAKS in output and p.returncode == 0:
         return 0
