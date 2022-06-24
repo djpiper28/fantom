@@ -23,8 +23,6 @@ def tests():
     p.wait()
 
     output = ""
-    for line in p.stdout:
-        print(f">>{line.decode('UTF-8')}")
     for line in p.stderr:
         print(f">>{line.decode('UTF-8')}")
         output += line
