@@ -123,5 +123,13 @@ void login_enp(struct mg_connection *c, fantom_server_t s, struct mg_http_messag
 
         free_login_details(&d);
     }
+
+    if (name != NULL) {
+        free(name);
+    }
+
+    if (password != NULL) {
+        free(password);
+    }
 }
 
