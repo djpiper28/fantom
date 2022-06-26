@@ -45,6 +45,7 @@ char *DB_CREATE_TABLES =
 
 #define GET_USER_BY_NAME_SQL "select uid, name, salt, password from users where name = ?;"
 #define GET_USER_BY_UID_SQL "select name, salt, password from users where uid = ?;"
+#define UPDATE_USER_PASSWORD "update users set password = ?, salt = ? where uid = ?;"
 
 fantom_status_t init_db(fantom_db_t *fdb, char *db_file)
 {
@@ -92,9 +93,7 @@ fantom_status_t init_db(fantom_db_t *fdb, char *db_file)
                             NULL);
 
     if (rc != SQLITE_OK) {
-        lprintf(LOG_ERROR, "Cannot init get user stmt %s\n", err);
-
-        sqlite3_free(err);
+        lprintf(LOG_ERROR, "Cannot init get user stmt %s\n", sqlite3_errmsg(fdb->db));
         return FANTOM_FAIL;
     }
 
@@ -107,9 +106,20 @@ fantom_status_t init_db(fantom_db_t *fdb, char *db_file)
                             NULL);
 
     if (rc != SQLITE_OK) {
-        lprintf(LOG_ERROR, "Cannot init login stmt %s\n", err);
+        lprintf(LOG_ERROR, "Cannot init login stmt %s\n", sqlite3_errmsg(fdb->db));
+        return FANTOM_FAIL;
+    }
 
-        sqlite3_free(err);
+    // change password
+    rc = sqlite3_prepare_v3(fdb->db,
+                            UPDATE_USER_PASSWORD,
+                            strlen(UPDATE_USER_PASSWORD),
+                            0,
+                            &fdb->change_password_stmt,
+                            NULL);
+
+    if (rc != SQLITE_OK) {
+        lprintf(LOG_ERROR, "Cannot init change password stmt %s\n", sqlite3_errmsg(fdb->db));
         return FANTOM_FAIL;
     }
 
@@ -124,6 +134,10 @@ void free_db(fantom_db_t *db)
 
     if (db->login_stmt != NULL) {
         sqlite3_finalize(db->login_stmt);
+    }
+
+    if (db->change_password_stmt != NULL) {
+        sqlite3_finalize(db->change_password_stmt);
     }
 
     if (db->db != NULL) {
@@ -158,14 +172,11 @@ static int is_default_password(char *password, char *salt)
 fantom_status_t db_get_user(fantom_db_t *fdb, int uid, fantom_user_t *ret)
 {
     ret->uid = -1;
-    char *err = NULL;
     int rc = sqlite3_bind_int(fdb->get_user_stmt,
                               1,
                               uid);
     if (rc != SQLITE_OK) {
-        lprintf(LOG_ERROR, "Cannot get user (uid %d) %s\n", uid, err);
-
-        sqlite3_free(err);
+        lprintf(LOG_ERROR, "Cannot get user (uid %d) %s\n", uid, sqlite3_errmsg(fdb->db));
         return FANTOM_FAIL;
     }
 
@@ -355,16 +366,13 @@ typedef struct fantom_login_t {
 fantom_status_t db_login(fantom_db_t *fdb, char *name, char *password_in, fantom_user_t *ret)
 {
     ret->uid = -1;
-    char *err = NULL;
     int rc = sqlite3_bind_text(fdb->login_stmt,
                                1,
                                name,
                                strlen(name),
                                SQLITE_STATIC);
     if (rc != SQLITE_OK) {
-        lprintf(LOG_ERROR, "Cannot bind login stmt %s\n", err);
-
-        sqlite3_free(err);
+        lprintf(LOG_ERROR, "Cannot bind login stmt %s\n", sqlite3_errmsg(fdb->db));
         return FANTOM_FAIL;
     }
 
@@ -445,5 +453,73 @@ fantom_status_t db_login(fantom_db_t *fdb, char *name, char *password_in, fantom
     }
 
     return FANTOM_SUCCESS;
+}
+
+fantom_status_t db_change_password(fantom_db_t *fdb, char *uid, char *new_password)
+{
+    if (strlen(new_password) < MINIMUM_PASSWORD_LENGTH) {
+        lprintf(LOG_ERROR,
+                "User %d's password was attempted to be set to a length less than the minimum %d\n",
+                uid,
+                MINIMUM_PASSWORD_LENGTH);
+        return FANTOM_FAIL;
+    }
+
+    char *salt = get_salt();
+    if (salt == NULL) {
+        lprintf(LOG_ERROR, "Cannot generate new salt\n");
+        return FANTOM_FAIL;
+    }
+
+    char *password_hash = hash_password(new_password, salt);
+
+    int rc = sqlite3_bind_text(fdb->change_password_stmt,
+                               1,
+                               password_hash,
+                               strlen(password_hash),
+                               SQLITE_STATIC);
+    if (rc != SQLITE_OK) {
+        lprintf(LOG_ERROR, "Cannot bind change password stmt (hash) %s\n", sqlite3_errmsg(fdb->db));
+        sqlite3_reset(fdb->change_password_stmt);
+        free(password_hash);
+        return FANTOM_FAIL;
+    }
+
+    rc = sqlite3_bind_text(fdb->change_password_stmt,
+                           2,
+                           salt,
+                           strlen(salt),
+                           SQLITE_STATIC);
+    if (rc != SQLITE_OK) {
+        lprintf(LOG_ERROR, "Cannot bind change password stmt (salt) %s\n", sqlite3_errmsg(fdb->db));
+        sqlite3_reset(fdb->change_password_stmt);
+        free(password_hash);
+        free(salt);
+        return FANTOM_FAIL;
+    }
+
+    rc = sqlite3_bind_int(fdb->change_password_stmt,
+                          3,
+                          uid);
+    if (rc != SQLITE_OK) {
+        lprintf(LOG_ERROR, "Cannot bind change password stmt (uid) %s\n", sqlite3_errmsg(fdb->db));
+        sqlite3_reset(fdb->change_password_stmt);
+        free(password_hash);
+        free(salt);
+        return FANTOM_FAIL;
+    }
+
+    rc = sqlite3_step(fdb->change_password_stmt);
+
+    fantom_status_t s = rc == SQLITE_DONE ? FANTOM_SUCCESS : FANTOM_FAIL;
+    if (s == FANTOM_FAIL) {
+        lprintf(LOG_ERROR, "Cannot change password %s\n", sqlite3_errmsg(fdb->db));
+    }
+
+    sqlite3_reset(fdb->change_password_stmt);
+    free(password_hash);
+    free(salt);
+
+    return s;
 }
 

@@ -137,6 +137,32 @@ static int test_login_bad_user()
     return 1;
 }
 
+#define NEW_PASSWORD "73ondrO_li0_123"
+
+static int test_change_password()
+{
+    fantom_db_t db;
+    ASSERT(access(TEST_DB, F_OK) == 0);
+    ASSERT(init_db(&db, TEST_DB) == FANTOM_SUCCESS);
+
+    fantom_status_t s = db_change_password(&db, 1, NEW_PASSWORD);
+    ASSERT(s == FANTOM_SUCCESS);
+
+    fantom_user_t ret;
+    s = db_login(&db, DEFAULT_USER, NEW_PASSWORD, &ret);
+
+    ASSERT(s == FANTOM_SUCCESS);
+    ASSERT(ret.uid == 1);
+    ASSERT(ret.name != NULL);
+    ASSERT(strcmp(ret.name, DEFAULT_USER) == 0);
+    ASSERT(ret.status == FANTOM_USER_VALID);
+
+    free_user(&ret);
+    free_db(&db);
+
+    return 1;
+}
+
 int test_db()
 {
     unit_test tests[] = {
@@ -146,7 +172,8 @@ int test_db()
         {&test_get_all_users, "test_get_all_users"},
         {&test_login_admin, "test_login_admin"},
         {&test_login_admin_bad_password, "test_login_admin_bad_password"},
-        {&test_login_bad_user, "test_login_bad_user"}
+        {&test_login_bad_user, "test_login_bad_user"},
+        {&test_change_password, "test_change_password"}
     };
 
     return run_tests(tests, TESTS_SIZE(tests), "db.c");
