@@ -56,22 +56,20 @@ fantom_status_t init_db(fantom_db_t *fdb, char *db_file)
     }
 
     // Open the database
-    sqlite3 *db;
-    int rc = sqlite3_open(db_file, &db);
+    int rc = sqlite3_open(db_file, &fdb->db);
     if (rc) {
-        lprintf(LOG_ERROR, "Cannot open database %s\n", sqlite3_errmsg(db));
+        lprintf(LOG_ERROR, "Cannot open database %s\n", sqlite3_errmsg(fdb->db));
         return FANTOM_FAIL;
     }
 
     // Make tables
     char *err = NULL;
     if (make_tables) {
-        int rc = sqlite3_exec(db, DB_CREATE_TABLES, NULL, NULL, &err);
+        int rc = sqlite3_exec(fdb->db, DB_CREATE_TABLES, NULL, NULL, &err);
         if (rc != SQLITE_OK) {
             lprintf(LOG_ERROR, "Cannot create tables %s\n", err);
 
             sqlite3_free(err);
-            sqlite3_close(db);
             return FANTOM_FAIL;
         }
 
@@ -83,9 +81,6 @@ fantom_status_t init_db(fantom_db_t *fdb, char *db_file)
                 ANSI_RED "change the password" ANSI_RESET ".\n"
                 ANSI_RED "You cannot use the account until the password is changed.\n" ANSI_RESET);
     }
-
-    // Copy to struct
-    fdb->db = db;
 
     // Init prepared statements
     // get user
@@ -137,7 +132,6 @@ void free_db(fantom_db_t *db)
 }
 
 // Model
-
 void free_user(fantom_user_t *user)
 {
     if (user->name != NULL) {
