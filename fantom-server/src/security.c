@@ -44,7 +44,7 @@ int get_nonce_map_index(fantom_nonce_manager_t *mgr, unsigned int nonce)
 
 fantom_status_t nonce_map_recompute(fantom_nonce_manager_t *mgr)
 {
-    memset(mgr->nonce_map, 0, sizeof(* mgr->nonce_map) * NONCE_MAP_SIZE);
+    memset(mgr->nonce_map, 0, NONCE_MAP_SIZE * sizeof * mgr->nonce_map);
     int tmp = mgr->nonces;
     mgr->nonces = 0; // Override the length check
 
@@ -107,6 +107,7 @@ fantom_status_t init_nonce_manager(fantom_nonce_manager_t *nonce_mgr)
         free_nonce_manager(nonce_mgr);
         return FANTOM_FAIL;
     }
+    memset(nonce_mgr->nonce_map, 0, NONCE_MAP_SIZE * sizeof * nonce_mgr->nonce_map);
 
     nonce_mgr->nonce_queue = malloc(NONCE_MAX_COUNT * sizeof * nonce_mgr->nonce_queue);
     if (nonce_mgr->nonce_queue == NULL) {
@@ -114,6 +115,7 @@ fantom_status_t init_nonce_manager(fantom_nonce_manager_t *nonce_mgr)
         free_nonce_manager(nonce_mgr);
         return FANTOM_FAIL;
     }
+    memset(nonce_mgr->nonce_queue, 0, NONCE_MAX_COUNT * sizeof * nonce_mgr->nonce_queue);
 
     nonce_mgr->nonces = 0;
     nonce_mgr->poll_thread_running = 1;
@@ -155,9 +157,8 @@ fantom_status_t get_nonce(fantom_nonce_manager_t *mgr, unsigned int *ret)
 {
     fantom_status_t status = FANTOM_SUCCESS;
     int cont = 1;
-    unsigned int nonce;
     while (cont) {
-        nonce = rand();
+        unsigned int nonce = rand();
 
         pthread_mutex_lock(&mgr->lock_var);
         if (mgr->nonces + 1 >= NONCE_MAX_COUNT) {

@@ -126,6 +126,7 @@ static int test_login_bad_user()
     ASSERT(init_db(&db, TEST_DB) == FANTOM_SUCCESS);
 
     fantom_user_t ret;
+    memset(&ret, 0, sizeof(ret));
     fantom_status_t s = db_login(&db, "jimmy", "asdfgh", &ret);
 
     ASSERT(s == FANTOM_FAIL);

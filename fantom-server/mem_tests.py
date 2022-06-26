@@ -15,17 +15,18 @@ def tests():
     p = subprocess.Popen(
         f"valgrind {VALGRIND_OPTS} ./{TEST_EXEC_NAME}",
         shell=True,
-        bufsize=64,
+        bufsize=4096,
         stdin=subprocess.PIPE,
         stderr=subprocess.PIPE,
         stdout=subprocess.DEVNULL,
     )
-    p.wait()
 
     output = ""
     for line in p.stderr:
-        print(f">>{line.decode('UTF-8')}")
+        nl = "\n"
+        print(f">>{line.decode('UTF-8').split(nl)[0]}")
         output += line.decode("UTF-8")
+    p.wait()
 
     if NO_LEAKS in output and p.returncode == 0:
         return 0

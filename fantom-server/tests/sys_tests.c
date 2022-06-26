@@ -8,6 +8,7 @@
 #include "../src/main.h"
 #include "../src/server.h"
 #include "../src/db.h"
+#include "../src/config.h"
 
 static void *start_server(void *data)
 {
@@ -23,7 +24,7 @@ static int init_sys_tests()
 
     pthread_create(&server, NULL, &start_server, NULL);
 
-    for (int i = 5; i > 0; i--) {
+    for (int i = 2; i > 0; i--) {
         lprintf(LOG_INFO, "Waiting %d for server to start...\n", i);
         sleep(1);
     }
@@ -33,7 +34,7 @@ static int init_sys_tests()
 
 static int test_404()
 {
-    char *str = get_request("http://127.0.0.1:8765/adkaosjdiuahdiau");
+    char *str = get_request(CONFIG_DEFAULT_BIND "/adkaosjdiuahdiau");
     ASSERT(str != NULL);
     ASSERT(strlen(str) > 0);
     free(str);
@@ -42,7 +43,7 @@ static int test_404()
 
 static int test_preflight()
 {
-    char *ret = send_request("http://127.0.0.1:8765/odnaosdasd", "", "OPTIONS", 123);
+    char *ret = send_request(CONFIG_DEFAULT_BIND "/odnaosdasd", "", "OPTIONS", 123);
     ASSERT(ret != NULL);
     free(ret);
     return 1;
@@ -50,7 +51,7 @@ static int test_preflight()
 
 static int test_get_nonce()
 {
-    char *nonce_str = get_request("http://127.0.0.1:8765/api/get_nonce");
+    char *nonce_str = get_request(CONFIG_DEFAULT_BIND "/api/get_nonce");
     ASSERT(nonce_str != NULL);
 
     unsigned int nonce;
@@ -93,7 +94,7 @@ static int test_get_nonce()
 
 static int test_login()
 {
-    char *nonce_str = get_request("http://127.0.0.1:8765/api/get_nonce");
+    char *nonce_str = get_request(CONFIG_DEFAULT_BIND "/api/get_nonce");
     ASSERT(nonce_str != NULL);
 
     unsigned int nonce;
@@ -140,7 +141,7 @@ static int test_login()
     json_decref(obj);
     ASSERT(json != NULL);
 
-    char *ret = send_request("http://127.0.0.1:8765/api/login", json, "GET", nonce);
+    char *ret = send_request(CONFIG_DEFAULT_BIND "/api/login", json, "GET", nonce);
     ASSERT(ret != NULL);
 
     root = json_loads(ret, 0, &error);
