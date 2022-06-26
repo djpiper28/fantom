@@ -6,6 +6,7 @@ NO_LEAKS = "All heap blocks were freed -- no leaks are possible"
 TEST_EXEC_NAME = "fantom-tests"
 VALGRIND_OPTS = "--leak-check=full --show-leak-kinds=all --track-fds=yes"  # all" silly ubuntu has no all
 
+
 def tests():
     print(
         f"Running memcheck for {TEST_EXEC_NAME}",
@@ -22,7 +23,8 @@ def tests():
 
     output = ""
     for line in p.stderr:
-        print(f">>{line.decode('UTF-8').split('\n')[0]}")
+        nl = "\n"
+        print(f">>{line.decode('UTF-8').split(nl)[0]}")
         output += line.decode("UTF-8")
     p.wait()
 
