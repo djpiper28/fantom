@@ -56,6 +56,8 @@ void start_fantom(char *config_file)
 
     fantom_db_t db;
     if (!load_database(&db, &config)) {
+      lprintf(LOG_ERROR, "Cannot open database\n");
+    free_db(&db);
         return;
     }
 

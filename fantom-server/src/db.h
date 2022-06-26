@@ -9,7 +9,8 @@
 
 typedef struct fantom_db_t {
     sqlite3 *db;
-    sqlite3_stmt* login_stmt;
+    sqlite3_stmt *get_user_stmt;
+    sqlite3_stmt *login_stmt;
 } fantom_db_t;
 
 // Opens the db, if it is not present then it will make one and, create the tables.
