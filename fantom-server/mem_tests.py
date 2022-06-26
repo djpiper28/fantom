@@ -4,8 +4,7 @@ import sys
 
 NO_LEAKS = "All heap blocks were freed -- no leaks are possible"
 TEST_EXEC_NAME = "fantom-tests"
-VALGRIND_OPTS = "--leak-check=full --show-leak-kinds=all --track-fds=yes --fair-sched=yes"  # all" silly ubuntu has no all
-
+VALGRIND_OPTS = "--leak-check=full --show-leak-kinds=all --track-fds=yes"  # all" silly ubuntu has no all
 
 def tests():
     print(
@@ -15,17 +14,17 @@ def tests():
     p = subprocess.Popen(
         f"valgrind {VALGRIND_OPTS} ./{TEST_EXEC_NAME}",
         shell=True,
-        bufsize=64,
+        bufsize=4096,
         stdin=subprocess.PIPE,
         stderr=subprocess.PIPE,
         stdout=subprocess.DEVNULL,
     )
-    p.wait()
 
     output = ""
     for line in p.stderr:
-        print(f">>{line.decode('UTF-8')}")
+        print(f">>{line.decode('UTF-8').split('\n')[0]}")
         output += line.decode("UTF-8")
+    p.wait()
 
     if NO_LEAKS in output and p.returncode == 0:
         return 0
