@@ -180,8 +180,8 @@ fantom_status_t db_get_user(fantom_db_t *fdb, int uid, fantom_user_t *ret)
     char *name = NULL;
     char *salt = NULL;
     char *password = NULL;
-    while (SQLITE_ROW == sqlite3_step(fdb->login_stmt)) {
-        char *argv = (char *) sqlite3_column_text(fdb->login_stmt, 0);
+    while (SQLITE_ROW == sqlite3_step(fdb->get_user_stmt)) {
+        char *argv = (char *) sqlite3_column_text(fdb->get_user_stmt, 0);
         char *tmp = malloc(strlen(argv) + 1);
         if (tmp == NULL) {
             lprintf(LOG_ERROR, "Malloc error\n");
@@ -189,27 +189,27 @@ fantom_status_t db_get_user(fantom_db_t *fdb, int uid, fantom_user_t *ret)
         }
 
         strcpy(tmp, argv);
-        ret->name = tmp;
+        name = tmp;
 
-        argv = (char *) sqlite3_column_text(fdb->login_stmt, 1);
+        argv = (char *) sqlite3_column_text(fdb->get_user_stmt, 1);
         tmp = malloc(strlen(argv) + 1);
         if (tmp == NULL) {
             lprintf(LOG_ERROR, "Malloc error\n");
-            free(ret->name);
-            ret->name = NULL;
+            free(name);
+            name = NULL;
             return 0;
         }
 
         strcpy(tmp, argv);
         salt = tmp;
 
-        argv = (char *) sqlite3_column_text(fdb->login_stmt, 2);
+        argv = (char *) sqlite3_column_text(fdb->get_user_stmt, 2);
         tmp = malloc(strlen(argv) + 1);
         if (tmp == NULL) {
             lprintf(LOG_ERROR, "Malloc error\n");
-            free(ret->name);
+            free(name);
             free(salt);
-            ret->name = NULL;
+            name = NULL;
             salt = NULL;
             return 0;
         }
@@ -218,19 +218,12 @@ fantom_status_t db_get_user(fantom_db_t *fdb, int uid, fantom_user_t *ret)
         password = tmp;
     }
 
-    if (salt != NULL) {
-        free(salt);
-    }
-
-    if (password != NULL) {
-        free(password);
-    }
-
     if (name == NULL) {
         lprintf(LOG_ERROR, "Cannot find user (uid %d)\n", uid);
         return FANTOM_FAIL;
     }
     ret->uid = uid;
+    ret->name = name;
 
     if (is_default_password(password, salt)) {
         ret->status = FANTOM_USER_PASSWORD_NEEDS_CHANGE;
@@ -238,6 +231,14 @@ fantom_status_t db_get_user(fantom_db_t *fdb, int uid, fantom_user_t *ret)
         ret->status = FANTOM_USER_ACCOUNT_LOCKED;
     } else {
         ret->status = FANTOM_USER_VALID;
+    }
+
+    if (salt != NULL) {
+        free(salt);
+    }
+
+    if (password != NULL) {
+        free(password);
     }
 
     return FANTOM_SUCCESS;
