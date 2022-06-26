@@ -128,7 +128,7 @@ void free_db(fantom_db_t *db)
     }
 
     if (db->get_user_stmt != NULL) {
-      sqlite3_finalize(db->get_user_stmt);
+        sqlite3_finalize(db->get_user_stmt);
     }
 
     if (db->login_stmt != NULL) {
@@ -161,82 +161,14 @@ static int is_default_password(char *password, char *salt)
     return strcmp(password, DEFAULT_PASSWORD_HASH) == 0 && strcmp(salt, DEFAULT_PASSWORD_SALT) == 0;
 }
 
-static int db_get_user_callback(void *ret_in, int argc, char **argv, char ** col_names)
-{
-    if (argc == 0) {
-        lprintf(LOG_ERROR, "No cols in row\n");
-        return 0;
-    }
-
-    fantom_user_t *ret = (fantom_user_t *) ret_in;
-    char *salt = NULL;
-    char *password = NULL;
-
-    for (int i = 0; i < argc; i++) {
-        char *tmp = malloc(strlen(argv[i]) + 1);
-        switch (i) {
-        case 0:
-            if (tmp == NULL) {
-                lprintf(LOG_ERROR, "Malloc error\n");
-                return 0;
-            }
-
-            strcpy(tmp, argv[i]);
-            ret->name = tmp;
-            break;
-        case 1:
-            if (tmp == NULL) {
-                lprintf(LOG_ERROR, "Malloc error\n");
-                free(ret->name);
-                ret->name = NULL;
-                return 0;
-            }
-
-            strcpy(tmp, argv[i]);
-            salt = tmp;
-            break;
-        case 2:
-            if (tmp == NULL) {
-                lprintf(LOG_ERROR, "Malloc error\n");
-                free(ret->name);
-                free(salt);
-                ret->name = NULL;
-                salt = NULL;
-                return 0;
-            }
-
-            strcpy(tmp, argv[i]);
-            password = tmp;
-            break;
-        default:
-            lprintf(LOG_WARNING, "Unrecognised column %s\n", col_names[i]);
-            break;
-        }
-    }
-
-    if (is_default_password(password, salt)) {
-        ret->status = FANTOM_USER_PASSWORD_NEEDS_CHANGE;
-    } else if (strcmp(salt, "") == 0 || strcmp(password, "") == 0) {
-        ret->status = FANTOM_USER_ACCOUNT_LOCKED;
-    } else {
-        ret->status = FANTOM_USER_VALID;
-    }
-
-    free(salt);
-    free(password);
-
-    ret->uid = 0;
-    return 0;
-}
-
 fantom_status_t db_get_user(fantom_db_t *fdb, int uid, fantom_user_t *ret)
 {
     sqlite3_reset(fdb->get_user_stmt);
     ret->uid = -1;
     char *err = NULL;
     int rc = sqlite3_bind_int(fdb->get_user_stmt,
-                               1,
-                               uid);
+                              1,
+                              uid);
     if (rc != SQLITE_OK) {
         lprintf(LOG_ERROR, "Cannot get user (uid %d) %s\n", uid, err);
 
@@ -287,11 +219,11 @@ fantom_status_t db_get_user(fantom_db_t *fdb, int uid, fantom_user_t *ret)
     }
 
     if (salt != NULL) {
-      free(salt);
+        free(salt);
     }
 
     if (password != NULL) {
-      free(password);
+        free(password);
     }
 
     if (name == NULL) {
@@ -299,6 +231,14 @@ fantom_status_t db_get_user(fantom_db_t *fdb, int uid, fantom_user_t *ret)
         return FANTOM_FAIL;
     }
     ret->uid = uid;
+
+    if (is_default_password(password, salt)) {
+        ret->status = FANTOM_USER_PASSWORD_NEEDS_CHANGE;
+    } else if (strcmp(salt, "") == 0 || strcmp(password, "") == 0) {
+        ret->status = FANTOM_USER_ACCOUNT_LOCKED;
+    } else {
+        ret->status = FANTOM_USER_VALID;
+    }
 
     return FANTOM_SUCCESS;
 }
