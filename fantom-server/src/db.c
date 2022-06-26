@@ -43,8 +43,11 @@ char *DB_CREATE_TABLES =
     "'" DEFAULT_PASSWORD_HASH "');"
     "insert into admins (uid) values (1);";
 
+#define GET_USER_BY_NAME_SQL "select uid, name, salt, password from users where name = ?;"
+
 fantom_status_t init_db(fantom_db_t *fdb, char *db_file)
 {
+    memset(fdb, 0, sizeof(*fdb));
     int make_tables = 0;
     if (access(db_file, F_OK) != 0) {
         lprintf(LOG_WARNING, "The database file does not exist, making a new one\n");
@@ -60,8 +63,8 @@ fantom_status_t init_db(fantom_db_t *fdb, char *db_file)
     }
 
     // Make tables
+    char *err = NULL;
     if (make_tables) {
-        char *err = NULL;
         int rc = sqlite3_exec(db, DB_CREATE_TABLES, NULL, NULL, &err);
         if (rc != SQLITE_OK) {
             lprintf(LOG_ERROR, "Cannot create tables %s\n", err);
@@ -83,12 +86,32 @@ fantom_status_t init_db(fantom_db_t *fdb, char *db_file)
     // Copy to struct
     fdb->db = db;
 
+    rc = sqlite3_prepare_v3(fdb->db,
+                            GET_USER_BY_NAME_SQL,
+                            strlen(GET_USER_BY_NAME_SQL),
+                            0,
+                            &fdb->login_stmt,
+                            NULL);
+    if (rc != SQLITE_OK) {
+        lprintf(LOG_ERROR, "Cannot init login stmt %s\n", err);
+
+        sqlite3_free(err);
+        return FANTOM_FAIL;
+    }
+
+
     return FANTOM_SUCCESS;
 }
 
 void free_db(fantom_db_t *db)
 {
-    sqlite3_close(db->db);
+    if (db->db != NULL) {
+        sqlite3_close(db->db);
+    }
+
+    if (db->login_stmt != NULL) {
+        sqlite3_finalize(db->login_stmt);
+    }
 }
 
 // Model
@@ -329,74 +352,63 @@ typedef struct fantom_login_t {
     char *password;
 } fantom_login_t;
 
-#define GET_USER_BY_NAME_SQL "select uid, name, salt, password from users where name = ?;"
-
 fantom_status_t db_login(fantom_db_t *fdb, char *name, char *password_in, fantom_user_t *ret)
 {
+    sqlite3_reset(fdb->login_stmt);
     ret->uid = -1;
     char *err = NULL;
+    int rc = sqlite3_bind_text(fdb->login_stmt,
+                               1,
+                               name,
+                               strlen(name),
+                               SQLITE_STATIC);
+    if (rc != SQLITE_OK) {
+        lprintf(LOG_ERROR, "Cannot bind login stmt %s\n", err);
 
-    sqlite3_stmt* stmt;
-    int rc = sqlite3_prepare_v3(fdb->db,
-                                GET_USER_BY_NAME_SQL,
-                                strlen(GET_USER_BY_NAME_SQL),
-                                0,
-                                &stmt,
-                                NULL);
-
-    rc = sqlite3_bind_text(stmt,
-                           1,
-                           name,
-                           strlen(name),
-                           SQLITE_STATIC);
+        sqlite3_free(err);
+        return FANTOM_FAIL;
+    }
 
     char *salt = NULL;
     char *password = NULL;
-    while (SQLITE_ROW == sqlite3_step(stmt)) {
-        for (int i = 0; i < 4; i++) {
-            const char *argv = (const char *) sqlite3_column_text(stmt, i);
-            char *tmp = malloc(strlen(argv) + 1);
+    while (SQLITE_ROW == sqlite3_step(fdb->login_stmt)) {
+        ret->uid = sqlite3_column_int(fdb->login_stmt, 0);
 
-            switch (i) {
-            case 0:
-                ret->uid = atoi(argv);
-                free(tmp);
-                break;
-            case 1:
-                if (tmp == NULL) {
-                    lprintf(LOG_ERROR, "Malloc error\n");
-                    return 0;
-                }
-
-                strcpy(tmp, argv);
-                ret->name = tmp;
-                break;
-            case 2:
-                if (tmp == NULL) {
-                    lprintf(LOG_ERROR, "Malloc error\n");
-                    free(ret->name);
-                    ret->name = NULL;
-                    return 0;
-                }
-
-                strcpy(tmp, argv);
-                salt = tmp;
-                break;
-            case 3:
-                if (tmp == NULL) {
-                    lprintf(LOG_ERROR, "Malloc error\n");
-                    free(ret->name);
-                    free(salt);
-                    ret->name = NULL;
-                    salt = NULL;
-                    return 0;
-                }
-
-                strcpy(tmp, argv);
-                password = tmp;
-                break;
-            }
+        char *argv = (char *) sqlite3_column_text(fdb->login_stmt, 1);
+        char *tmp = malloc(strlen(argv) + 1);
+        if (tmp == NULL) {
+            lprintf(LOG_ERROR, "Malloc error\n");
+            return 0;
         }
+
+        strcpy(tmp, argv);
+        ret->name = tmp;
+
+        argv = (char *) sqlite3_column_text(fdb->login_stmt, 2);
+        tmp = malloc(strlen(argv) + 1);
+        if (tmp == NULL) {
+            lprintf(LOG_ERROR, "Malloc error\n");
+            free(ret->name);
+            ret->name = NULL;
+            return 0;
+        }
+
+        strcpy(tmp, argv);
+        salt = tmp;
+
+        argv = (char *) sqlite3_column_text(fdb->login_stmt, 3);
+        tmp = malloc(strlen(argv) + 1);
+        if (tmp == NULL) {
+            lprintf(LOG_ERROR, "Malloc error\n");
+            free(ret->name);
+            free(salt);
+            ret->name = NULL;
+            salt = NULL;
+            return 0;
+        }
+
+        strcpy(tmp, argv);
+        password = tmp;
     }
 
     if (salt != NULL && password != NULL) {
@@ -425,13 +437,6 @@ fantom_status_t db_login(fantom_db_t *fdb, char *name, char *password_in, fantom
 
     free(salt);
     free(password);
-    sqlite3_finalize(stmt);
-    if (rc != SQLITE_OK) {
-        lprintf(LOG_ERROR, "Cannot get user (name %s) %s\n", name, err);
-
-        sqlite3_free(err);
-        return FANTOM_FAIL;
-    }
 
     if (ret->uid == -1) {
         lprintf(LOG_WARNING, "Cannot login user (name %s)\n", name);

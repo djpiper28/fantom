@@ -2,10 +2,11 @@
 #include "fantom_utils.h"
 #include <stdio.h>
 
+#define CONFIG_DEFAULT_BIND "http://127.0.0.1:8765"
 #define CONFIG_FILE_NAME "fantom_config.json"
 #define CONFIG_HELP "{\n" \
 				"  \"db_file\": \"fantom.db\",\n" \
-				"  \"bind_url\": \"http://127.0.0.1:8765\",\n" \
+				"  \"bind_url\": \"" CONFIG_DEFAULT_BIND "\",\n" \
 				"  \"max_log_age_days\": 5,\n" \
 				"  \"jwt_expire\": 604800,\n" \
                                 "  \"jwt_secret\": \"idowhd78atd76a5duisdYUTSRDASGDA89yid87as5d64asrtdua\"\n" \
