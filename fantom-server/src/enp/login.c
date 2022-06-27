@@ -26,6 +26,7 @@ fantom_status_t try_login(fantom_server_t s, char *name, char *password, fantom_
 
     if (usr.status == FANTOM_USER_ACCOUNT_LOCKED) {
         free_user(&usr);
+        lprintf(LOG_ERROR, "The user %s has a locked account - change their password with the admin account or cli\n", name);
         return FANTOM_FAIL;
     }
 
