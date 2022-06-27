@@ -47,7 +47,7 @@ fantom_status_t db_login(fantom_db_t *fdb, char *name, char *password, fantom_us
 
 // For changing your own password, check that the old password is correct with db_login first
 // Otherwise you want to check that the user is an admin
-fantom_status_t db_change_password(fantom_db_t *fdb, char *uid, char *new_password);
+fantom_status_t db_change_password(fantom_db_t *fdb, int uid, char *new_password);
 
 int db_is_user_admin(fantom_db_t *fdb, int uid);
 

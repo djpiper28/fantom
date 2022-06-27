@@ -482,7 +482,7 @@ fantom_status_t db_login(fantom_db_t *fdb, char *name, char *password_in, fantom
     return FANTOM_SUCCESS;
 }
 
-fantom_status_t db_change_password(fantom_db_t *fdb, char *uid, char *new_password)
+fantom_status_t db_change_password(fantom_db_t *fdb, int uid, char *new_password)
 {
     if (strlen(new_password) < MINIMUM_PASSWORD_LENGTH) {
         lprintf(LOG_ERROR,

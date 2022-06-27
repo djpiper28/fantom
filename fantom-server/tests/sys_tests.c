@@ -13,6 +13,8 @@
 static void *start_server(void *data)
 {
     fantom_main(0, NULL);
+    pthread_exit(NULL);
+    return NULL;
 }
 
 static pthread_t server;
@@ -182,6 +184,7 @@ static int test_login()
     }
 
     ASSERT(found);
+    ASSERT(status == FANTOM_USER_PASSWORD_NEEDS_CHANGE);
     ASSERT(jwt);
 
     return 1;
