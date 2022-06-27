@@ -230,7 +230,7 @@ static int test_decode_jwt()
     ASSERT(ret != NULL);
     ASSERT(strlen(ret) != 0);
 
-    ASSERT(use_token(ret, jwt_secret) == FANTOM_SUCCESS);
+    ASSERT(use_token(ret, jwt_secret, &config) == FANTOM_SUCCESS);
     free(ret);
 
     return 1;
@@ -238,7 +238,10 @@ static int test_decode_jwt()
 
 static int test_decode_invalid_jwt()
 {
-    ASSERT(use_token("bad jwt", "asdf") == FANTOM_FAIL);
+    fantom_config_t config;
+    config.jwt_expire = 60 * 60 * 24 * 7;
+
+    ASSERT(use_token("bad jwt", "asdf", &config) == FANTOM_FAIL);
 
     return 1;
 }
@@ -255,7 +258,7 @@ static int test_decode_bad_jwt()
     ASSERT(ret != NULL);
     ASSERT(strlen(ret) != 0);
 
-    ASSERT(use_token(ret, jwt_secret) == FANTOM_FAIL);
+    ASSERT(use_token(ret, jwt_secret, &config) == FANTOM_FAIL);
     free(ret);
 
     return 1;

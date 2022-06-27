@@ -57,5 +57,5 @@ char *hash_password(char *password, char *salt);
 
 // JWT stuff
 char *issue_token(int uid, char *name, char *jwt_secret, fantom_config_t *config);
-fantom_status_t use_token(char *token, char *jwt_secret);
+fantom_status_t use_token(char *token, char *jwt_secret, fantom_config_t *config);
 

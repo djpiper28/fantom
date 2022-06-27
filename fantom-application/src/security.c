@@ -333,8 +333,8 @@ static char *get_issuer()
     }
     hostname_buffer[sizeof(hostname_buffer) - 1] = 0;
 
-    size_t len = 512 + sizeof("f@antom--01234567");
-    char *ret = malloc(len * sizeof * ret);
+    size_t len = 300;
+    char *ret = malloc(sizeof(*ret) * len);
     if (ret == NULL) {
         lprintf(LOG_ERROR, "Cannot allocate memory\n");
         return NULL;
@@ -394,7 +394,7 @@ char *issue_token(int uid, char *name, char *jwt_secret, fantom_config_t *config
     return ret;
 }
 
-fantom_status_t use_token(char *token, char *jwt_secret)
+fantom_status_t use_token(char *token, char *jwt_secret, fantom_config_t *config)
 {
     char *issuer = get_issuer();
     if (issuer == NULL) {

@@ -99,6 +99,7 @@ set(SRC_FILES
     src/utils.c
     src/enp/get_nonce.c
     src/enp/login.c
+    src/enp/change_password.c
     src/monitoring/ram.c
     src/monitoring/cpu.c)
 

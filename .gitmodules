@@ -1,3 +1,6 @@
-[submodule "lib/l8w8jwt"]
+[submodule "server/lib/l8w8jwt"]
 	path = fantom-server/lib/l8w8jwt
+	url = https://github.com/GlitchedPolygons/l8w8jwt.git
+[submodule "app/lib/l8w8jwt"]
+	path = fantom-application/lib/l8w8jwt
 	url = https://github.com/GlitchedPolygons/l8w8jwt.git
