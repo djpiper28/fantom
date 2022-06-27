@@ -12,25 +12,25 @@ char *DB_CREATE_TABLES =
     "  salt varchar(256) not null,"
     "  password varchar(128) not null"
     ");"
-    
+
     "create index users_uid on users(uid);"
     "create index users_name on users(name);"
-    
+
     "create table admins ("
     "  uid int REFERENCES users(uid) not NULL"
     ");"
-    
+
     "create index admins_uid on admins(uid);"
-    
+
     "create table programs ("
     "  pid int primary key,"
     "  name varchar(256),"
     "  created_time int"
     ");"
-    
+
     "create index programs_pid on programs(pid);"
     "create index programs_name on programs(name);"
-    
+
     "create table log_prog_entry ("
     "  pid int REFERENCES programs(pid) not null,"
     "  time int not null,"
@@ -38,19 +38,19 @@ char *DB_CREATE_TABLES =
     "  cpu_usage int not null,"
     "  cpu_count int not null"
     ");"
-    
+
     "create index log_prog_entry_pid on log_prog_entry(pid);"
     "create index log_prog_entry_time on log_prog_entry(time);"
-    
+
     "create table log_entry ("
     "  time int not null,"
     "  memory_usage int not null,"
     "  cpu_usage int not null,"
     "  cpu_count int not null"
     ");"
-    
+
     "create index log_entry_time on log_entry(time);"
-    
+
     "create table user_prog_prefs ("
     "  uid int REFERENCES users(uid) not null,"
     "  pid int REFERENCES programs(pid) not null,"

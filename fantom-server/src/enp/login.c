@@ -101,9 +101,17 @@ void login_enp(struct mg_connection *c, fantom_server_t s, struct mg_http_messag
         if (status == FANTOM_FAIL) {
             send_403_error(c);
         } else {
-            json_t *obj = json_pack("{sssi}",
-                                    "jwt", d.jwt,
-                                    "status", d.user.status);
+            json_t *obj;
+            if (d.user.status == FANTOM_USER_PASSWORD_NEEDS_CHANGE) {
+                obj = json_pack("{sssiss}",
+                                "jwt", d.jwt,
+                                "status", d.user.status,
+                                "meta", "You must change the password of this account in order to use it.");
+            } else {
+                obj = json_pack("{sssi}",
+                                "jwt", d.jwt,
+                                "status", d.user.status);
+            }
             if (obj == NULL) {
                 lprintf(LOG_ERROR, "Cannot encode json\n");
                 send_500_error(c);
